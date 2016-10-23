@@ -1,5 +1,5 @@
-function [ X ] = idft( Z )
-X = swap(dft(swap(Z)))/length(Z);
+function [ X ] = idft( Z, dft_impl )
+X = swap(dft_impl(swap(Z)))/length(Z);
 end
 
 function [Zs] = swap( Z )

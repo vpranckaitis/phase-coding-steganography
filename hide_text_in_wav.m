@@ -13,13 +13,13 @@ textBitsMatrix = de2bi(textBytes);
 textBits = reshape(textBitsMatrix',length(textBitsMatrix(:)),1);
 
 m = length(textBits);
-l = 1024 * 3;
-display(sprintf('Segment size: %d', l));
+[ l, dft_impl, idft_impl ] = global_vars();
+display(sprintf('Sample size: %d', l));
 display(sprintf('Text length: %d', length(text)));
 
 [header, input] = read_wav_file(filename);
 
-Z = dft(input(1:l));
+Z = dft_impl(input(1:l));
 [~, theta] = magnitude_and_phase(Z);
 deltaTheta = theta;
 phases = textBits*(-pi) + (pi / 2);
@@ -29,20 +29,23 @@ deltaTheta = deltaTheta - theta;
 
 output = zeros(size(input));
 
+tic
 for i=1:(length(input)/l)
     sampleStart = (i - 1) * l + 1;
     sampleEnd = sampleStart + l - 1;
     
-    Z = dft(input(sampleStart:sampleEnd));
+    Z = dft_impl(input(sampleStart:sampleEnd));
     [R, theta] = magnitude_and_phase(Z);
     newTheta = theta + deltaTheta;
     Z = R.*exp(1i*newTheta);
-    output(sampleStart:sampleEnd) = idft(Z);
+    output(sampleStart:sampleEnd) = idft_impl(Z);
     
     figure(min([i 2]))
     subplot(3, 1, 1); plot(1:length(theta),theta); ylim([-2*pi 2*pi]);
     subplot(3, 1, 2); plot(1:length(newTheta),newTheta); ylim([-2*pi 2*pi]);
 end
+toc
+
 figure(3)
 subplot(2, 1, 1); plot(1:length(input),input); ylim([0-10 256+10]);
 subplot(2, 1, 2); plot(1:length(output),output); ylim([0-10 256+10]);

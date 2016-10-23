@@ -8,12 +8,12 @@ if nargin < 1
     textLength = 18;
 end
 
-l = 1024 * 3;
+[ l, dft_impl, ~ ] = global_vars();
 m = textLength * 8;
 
 [~, input] = read_wav_file(filename);
 
-Z = dft(input(1:l));
+Z = dft_impl(input(1:l));
 [~, theta] = magnitude_and_phase(Z);
 
 figure(1);

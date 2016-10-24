@@ -1,19 +1,31 @@
-function [text] = extract_lsb_watermark(textLength, filename)
+function [recovered_watermark] = ... 
+    extract_lsb_watermark(textLength, file_path, filename)
+
     % UNTITLED Summary of this function goes here
-    % Detailed explanation goes here
+    %   Detailed explanation goes here
+ 
+    [~, out_dir_lsb, ~] = global_folders();
 
     if nargin < 1
         textLength = 18;
     end
-
+    
     if nargin < 2
-        filename = 'stego_audio/carlin_blow_it.wav';
+        file_path = out_dir_lsb;
+    end
+    
+    if nargin < 3
+        filename = 'carlin_blow_it.wav';
     end
 
-    [ l, dft_impl, ~ ] = global_vars();
-    m = textLength * 8;
+    % Read the data from the File
+    full_path = [file_path '/' filename];
 
-    [~, input] = read_wav_file(filename);
+    [~, input] = read_wav_file(full_path);
+
+
+    [ l, dft_impl, ~ ] = global_vars_lsb();
+    m = textLength * 8;
 
     Z = dft_impl(input(1 : l));
     [~, theta] = magnitude_and_phase(Z);
@@ -27,7 +39,7 @@ function [text] = extract_lsb_watermark(textLength, filename)
     textBitsMatrix = reshape(textBits, 8, length(textBits) / 8)';
     textBytes = bi2de(textBitsMatrix);
 
-    text = native2unicode(textBytes)';
+    recovered_watermark = native2unicode(textBytes)';
 end
 
 function Y = bi2de(X)

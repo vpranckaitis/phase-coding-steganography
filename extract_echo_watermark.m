@@ -1,33 +1,66 @@
-function [recovered_watermark] = extract_echo_watermark(encoded_wav, Fs, zero_delay, one_delay)
+function [recovered_watermark] = ...
+    extract_echo_watermark(file_path, filename, Fs, zero_delay, one_delay)
+
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 
+    [~, Fs_default, zero_delay_default, one_delay_default, ~] = ...
+        global_vars_echo();
+
+    [~, ~, out_dir_echo] = global_folders();
+    
+    if nargin < 1
+        file_path = out_dir_echo;
+    end
+    
+    if nargin < 2
+        filename = 'carlin_blow_it.wav';
+    end
+
+    if nargin < 3
+        Fs = Fs_default;
+    end
+
+    if nargin < 4
+        zero_delay = zero_delay_default;
+    end
+
+    if nargin < 5
+        one_delay = one_delay_default;
+    end
+
+    % Read the data from the File
+    full_path = [file_path '/' filename];
+
+    [~, input] = read_wav_file(full_path);
+
+    
     % divide up a signal into windows
     zero_delay = zero_delay / 1000;
     one_delay = one_delay / 1000;
 
-    nx = length(encoded_wav);                            % size of signal
-    w = hamming(2000);                          % hamming window
+    nx = length(input);                        % size of signal
+    w = hamming(2000);                         % hamming window
     nw = length(w);                            % size of window
-    pos=1;
+    pos = 1;
 
     zero_delay_signal = [];
     one_delay_signal = [];
     decision_signal = [];
 
-    while (pos+nw <= nx)                       % while enough signal left
-            y = encoded_wav(pos:pos+nw-1).*w;           % make window y
+    while (pos+nw <= nx)                         % while enough signal left
+            y = input(pos : pos + nw - 1) .* w;  % make window y
             c = abs(rceps(y));
             ac = autoceps(y);
             
             zero_delay_signal(pos) = c(round(zero_delay * Fs) + 1);
             one_delay_signal(pos) = c(round(one_delay * Fs) + 1);
             
-            pos = pos + round(nw/25);                 % next window
+            pos = pos + round(nw / 25);                 % next window
     end
 
     last_recorded_bit = 0;
-    for pos=1:length(zero_delay_signal),
+    for pos = 1 : length(zero_delay_signal),
             if one_delay_signal(pos) - zero_delay_signal(pos) > 0
                 decision_signal(pos) = 1;
                 last_recorded_bit = 1;
@@ -44,7 +77,7 @@ function [recovered_watermark] = extract_echo_watermark(encoded_wav, Fs, zero_de
     decoded_bit_string = [];
     runs = [];
     deciders = [];
-    for pos=1:length(decision_signal),
+    for pos = 1 : length(decision_signal),
         if current_bit == 2
             current_bit = decision_signal(pos);
         end
@@ -60,7 +93,7 @@ function [recovered_watermark] = extract_echo_watermark(encoded_wav, Fs, zero_de
                 dsegments = floor(seg);
             end
             nbits = round(seg);
-            for i=1:nbits,
+            for i = 1 : nbits,
                 decoded_bit_string = [decoded_bit_string, current_bit];
             end
 

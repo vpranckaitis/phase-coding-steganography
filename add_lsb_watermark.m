@@ -1,25 +1,35 @@
-function add_lsb_watermark(text, filename)
+function add_lsb_watermark(watermark, file_path, filename)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 
+    [in_dir, out_dir_lsb, ~] = global_folders();
+
     if nargin < 1
-        text = 'Tekstas uzslepimui';
+        watermark = 'Tekstas uzslepimui';
     end
     
     if nargin < 2
-        filename = 'audio/carlin_blow_it.wav';
+        file_path = in_dir;
+    end
+    
+    if nargin < 3
+        filename = 'carlin_blow_it.wav';
     end
 
-    textBytes = unicode2native(text)';
+    % Read the data from the File
+    full_path = [file_path '/' filename];
+
+    [header, input] = read_wav_file(full_path);
+
+
+    textBytes = unicode2native(watermark)';
     textBitsMatrix = de2bi(textBytes);
     textBits = reshape(textBitsMatrix', length(textBitsMatrix(:)), 1);
 
     m = length(textBits);
-    [l, dft_impl, idft_impl] = global_vars();
+    [l, dft_impl, idft_impl] = global_vars_lsb();
     display(sprintf('Sample size: %d', l));
-    display(sprintf('Text length: %d', length(text)));
-
-    [header, input] = read_wav_file(filename);
+    display(sprintf('Text length: %d', length(watermark)));
 
     Z = dft_impl(input(1 : l));
     [~, theta] = magnitude_and_phase(Z);
@@ -52,7 +62,8 @@ function add_lsb_watermark(text, filename)
     subplot(2, 1, 1); plot(1 : length(input), input); ylim([0 - 10 256 + 10]);
     subplot(2, 1, 2); plot(1 : length(output) ,output); ylim([0 - 10 256 + 10]);
 
-    write_wav_file(strcat('stego_',filename), header, output);
+    % Write the data back to a File
+    write_wav_file([out_dir_lsb '/' filename], header, output);
 
 end
 

@@ -1,6 +1,6 @@
-function [ sample_size, dft_impl, idft_impl ] = global_vars( )
+function [sample_size, dft_impl, idft_impl] = global_vars_lsb()
     % UNTITLED Summary of this function goes here
-    % Detailed explanation goes here
+    %    Detailed explanation goes here
 
     sample_size = 1024 * 2;
     %dft_impl = @dft;

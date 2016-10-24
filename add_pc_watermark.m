@@ -27,7 +27,7 @@ function add_pc_watermark(watermark, file_path, filename)
     textBits = reshape(textBitsMatrix', length(textBitsMatrix(:)), 1);
 
     m = length(textBits);
-    [l, dft_impl, idft_impl] = global_vars_lsb();
+    [l, dft_impl, idft_impl] = global_vars_pc();
     display(sprintf('Sample size: %d', l));
     display(sprintf('Text length: %d', length(watermark)));
 

@@ -23,7 +23,7 @@ function [recovered_watermark] = ...
     [~, input] = read_wav_file(full_path);
 
 
-    [ l, dft_impl, ~ ] = global_vars_lsb();
+    [ l, dft_impl, ~ ] = global_vars_pc();
     m = textLength * 8;
 
     Z = dft_impl(input(1 : l));

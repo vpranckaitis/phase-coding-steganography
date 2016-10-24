@@ -48,7 +48,7 @@ function [recovered_watermark] = ...
     one_delay_signal = [];
     decision_signal = [];
 
-    while (pos+nw <= nx)                         % while enough signal left
+    while (pos + nw <= nx)                         % while enough signal left
             y = input(pos : pos + nw - 1) .* w;  % make window y
             c = abs(rceps(y));
             ac = autoceps(y);

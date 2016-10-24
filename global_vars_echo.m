@@ -11,7 +11,7 @@ function [init_amplitude, Fs, zero_delay, one_delay, decay_rate] = ...
 
     init_amplitude = 0.2;
     Fs = 4410; % Frequency of sampling
-    zero_delay = 0.61; % Should result in 27 samples
-    one_delay = 0.73; % Should result in 32 samples
+    zero_delay = 0.8; %0.61; % Should result in 27 samples
+    one_delay = 1; %0.73; % Should result in 32 samples
     decay_rate = 0.5; % Must be between 0.3 and 0.85
 end

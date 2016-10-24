@@ -1,4 +1,4 @@
-function add_lsb_watermark(text, filename)
+function add_pc_watermark(text, filename)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 

@@ -1,4 +1,4 @@
-function [text] = extract_lsb_watermark(textLength, filename)
+function [text] = extract_pc_watermark(textLength, filename)
     % UNTITLED Summary of this function goes here
     % Detailed explanation goes here
 

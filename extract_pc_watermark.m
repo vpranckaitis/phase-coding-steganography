@@ -1,17 +1,16 @@
 function [recovered_watermark] = ... 
-    extract_lsb_watermark(textLength, file_path, filename)
-
+    extract_pc_watermark(textLength, file_path, filename)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
  
-    [~, out_dir_lsb, ~] = global_folders();
+    [~, out_dir_pc, ~] = global_folders();
 
     if nargin < 1
         textLength = 18;
     end
     
     if nargin < 2
-        file_path = out_dir_lsb;
+        file_path = out_dir_pc;
     end
     
     if nargin < 3

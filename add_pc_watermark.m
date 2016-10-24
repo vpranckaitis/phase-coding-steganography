@@ -1,8 +1,8 @@
-function add_lsb_watermark(watermark, file_path, filename)
+function add_pc_watermark(watermark, file_path, filename)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 
-    [in_dir, out_dir_lsb, ~] = global_folders();
+    [in_dir, out_dir_pc, ~] = global_folders();
 
     if nargin < 1
         watermark = 'Tekstas uzslepimui';
@@ -63,7 +63,7 @@ function add_lsb_watermark(watermark, file_path, filename)
     subplot(2, 1, 2); plot(1 : length(output) ,output); ylim([0 - 10 256 + 10]);
 
     % Write the data back to a File
-    write_wav_file([out_dir_lsb '/' filename], header, output);
+    write_wav_file([out_dir_pc '/' filename], header, output);
 
 end
 

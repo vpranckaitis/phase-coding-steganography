@@ -5,7 +5,7 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, filename, F
     [alpha_default, Fs_default, zero_delay_default, one_delay_default, ...
         decay_rate_default] = global_vars_echo();
 
-    [in_dir, out_dir_lsb, out_dir_echo] = global_folders();
+    [in_dir, out_dir_pc, out_dir_echo] = global_folders();
 
     if nargin < 1
         watermark = 'Tekstas uzslepimui';

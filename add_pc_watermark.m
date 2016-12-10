@@ -24,7 +24,7 @@ function add_pc_watermark(watermark, file_path, filename)
 
     m = length(textBits);
     [l, dft_impl, idft_impl] = global_vars_pc();
-    display(sprintf('Sample size: %d', l));
+    display(sprintf('segment size: %d', l));
     display(sprintf('Text length: %d', length(watermark)));
 
     % Compute 'deltaTheta' – the amount to shift phases
@@ -40,25 +40,25 @@ function add_pc_watermark(watermark, file_path, filename)
 
     tic
     for i = 1 : (length(input) / l)
-        sampleStart = (i - 1) * l + 1;
-        sampleEnd = sampleStart + l - 1;
+        segmentStart = (i - 1) * l + 1;
+        segmentEnd = segmentStart + l - 1;
 
-        % Shift phases of the sample
-        Z = dft_impl(input(sampleStart:sampleEnd));
+        % Shift phases of the segment
+        Z = dft_impl(input(segmentStart:segmentEnd));
         [R, theta] = magnitude_and_phase(Z);
         newTheta = theta + deltaTheta;
         Z = R .* exp(1i * newTheta);
-        output(sampleStart : sampleEnd) = idft_impl(Z);
+        output(segmentStart : segmentEnd) = idft_impl(Z);
 
         figure(min([i 2]))
         subplot(3, 1, 1); 
         plot(1 : length(theta), theta, 'r'); ylim([-2 * pi 2 * pi]); 
-        title(sprintf('Phase values of sample %d before shifting phases', i),'fontweight','bold'); 
+        title(sprintf('Phase values of segment %d before shifting phases', i),'fontweight','bold'); 
         xlabel('frequency'); ylabel('phase, rad');
         
         subplot(3, 1, 2); 
         plot(1 : length(newTheta), newTheta, 'r'); ylim([-2 * pi 2 * pi]);
-        title(sprintf('Phase values of sample %d after shifting phases', i),'fontweight','bold'); 
+        title(sprintf('Phase values of segment %d after shifting phases', i),'fontweight','bold'); 
         xlabel('frequency'); ylabel('phase, rad');
     end
     toc

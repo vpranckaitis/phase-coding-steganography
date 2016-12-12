@@ -29,5 +29,5 @@ function [y, nd] = rcunwrap(x)
     end
 
     nd = round(y(idx) / pi);
-    y(:) = y(:)' - pi * nd * (0 : (n - 1)) /nh;
+    y(:) = y(:)' - pi * nd * (0 : (n - 1)) / nh;
 end

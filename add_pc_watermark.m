@@ -60,7 +60,7 @@ function add_pc_watermark(watermark, file_path, filename)
 
     figure(3)
     subplot(2, 1, 1); plot(1 : length(input), input); ylim([0 - 10 256 + 10]);
-    subplot(2, 1, 2); plot(1 : length(output) ,output); ylim([0 - 10 256 + 10]);
+    subplot(2, 1, 2); plot(1 : length(output), output); ylim([0 - 10 256 + 10]);
 
     % Write the data back to a File
     write_wav_file([out_dir_pc '/' filename], header, output);

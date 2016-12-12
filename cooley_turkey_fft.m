@@ -1,6 +1,6 @@
 function [Z] = cooley_turkey_fft(X)
     % UNTITLED Summary of this function goes here
-    % Detailed explanation goes here
+    %   Detailed explanation goes here
 
     l = length(X);
     if l == 1

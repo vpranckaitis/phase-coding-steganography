@@ -8,7 +8,7 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, filename, F
     [in_dir, out_dir_pc, out_dir_echo] = global_folders();
 
     if nargin < 1
-        watermark = 'Tekstas uzslepimui';
+        watermark = 'test dideis ir baisus';
     end
 
     if nargin < 2
@@ -47,7 +47,7 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, filename, F
     zero_delay = zero_delay / 1000;
     one_delay = one_delay / 1000;
 
-    watermark = dec2bin(watermark);
+    watermark = dec2bin(watermark)
     watermark = ['0', '1', '0', '1', '0', '1', '0'; watermark];
     segment_length = round(Fs / 16);
     segment_transition_time = round(segment_length / 32);
@@ -86,7 +86,7 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, filename, F
                     one_mixer_signal(one_mixer_position + i) = trans_val;
                 end
             end
-            
+
             one_mixer_position = one_mixer_position + segment_transition_time;
             % write the echo
             one_mixer_signal(one_mixer_position : one_mixer_position + segment_length) = watermark_bit;
@@ -112,9 +112,13 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, filename, F
     axis([-20, length(zero_mixer_signal), -0.1, 1.1]);
     q = plot(one_mixer_signal);
     set(q, 'Color', 'black', 'LineWidth', 2);
-
+    
     % Write the data back to a File
     output = processed_wave;
+
+    figure(2)
+    subplot(2, 1, 1); plot(1 : length(input), input); ylim([0 - 10 256 + 10]);
+    subplot(2, 1, 2); plot(1 : length(output), output); ylim([0 - 10 256 + 10]);
 
     write_wav_file([out_dir_echo '/' filename], header, output);
 

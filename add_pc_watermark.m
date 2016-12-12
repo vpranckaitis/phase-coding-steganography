@@ -18,19 +18,16 @@ function add_pc_watermark(watermark, file_path, filename)
 
     % Read the data from the File
     full_path = [file_path '/' filename];
-
     [header, input] = read_wav_file(full_path);
 
-
-    textBytes = unicode2native(watermark)';
-    textBitsMatrix = de2bi(textBytes);
-    textBits = reshape(textBitsMatrix', length(textBitsMatrix(:)), 1);
+    textBits = text2bits(watermark);
 
     m = length(textBits);
     [l, dft_impl, idft_impl] = global_vars_pc();
-    display(sprintf('Sample size: %d', l));
+    display(sprintf('segment size: %d', l));
     display(sprintf('Text length: %d', length(watermark)));
 
+    % Compute 'deltaTheta' – the amount to shift phases
     Z = dft_impl(input(1 : l));
     [~, theta] = magnitude_and_phase(Z);
     deltaTheta = theta;
@@ -43,24 +40,39 @@ function add_pc_watermark(watermark, file_path, filename)
 
     tic
     for i = 1 : (length(input) / l)
-        sampleStart = (i - 1) * l + 1;
-        sampleEnd = sampleStart + l - 1;
+        segmentStart = (i - 1) * l + 1;
+        segmentEnd = segmentStart + l - 1;
 
-        Z = dft_impl(input(sampleStart:sampleEnd));
+        % Shift phases of the segment
+        Z = dft_impl(input(segmentStart:segmentEnd));
         [R, theta] = magnitude_and_phase(Z);
         newTheta = theta + deltaTheta;
         Z = R .* exp(1i * newTheta);
-        output(sampleStart : sampleEnd) = idft_impl(Z);
+        output(segmentStart : segmentEnd) = idft_impl(Z);
 
         figure(min([i 2]))
-        subplot(3, 1, 1); plot(1 : length(theta), theta); ylim([-2 * pi 2 * pi]);
-        subplot(3, 1, 2); plot(1 : length(newTheta), newTheta); ylim([-2 * pi 2 * pi]);
+        subplot(3, 1, 1); 
+        plot(1 : length(theta), theta, 'r'); ylim([-2 * pi 2 * pi]); 
+        title(sprintf('Phase values of segment %d before shifting phases', i),'fontweight','bold'); 
+        xlabel('frequency'); ylabel('phase, rad');
+        
+        subplot(3, 1, 2); 
+        plot(1 : length(newTheta), newTheta, 'r'); ylim([-2 * pi 2 * pi]);
+        title(sprintf('Phase values of segment %d after shifting phases', i),'fontweight','bold'); 
+        xlabel('frequency'); ylabel('phase, rad');
     end
     toc
 
     figure(3)
-    subplot(2, 1, 1); plot(1 : length(input), input); ylim([0 - 10 256 + 10]);
-    subplot(2, 1, 2); plot(1 : length(output), output); ylim([0 - 10 256 + 10]);
+
+    subplot(2, 1, 1); 
+    plot(1 : length(input), input); ylim([0 - 10 256 + 10]); 
+    title('Input sound signal','fontweight','bold'); 
+    xlabel('time'); ylabel('amplitude'); 
+    
+    subplot(2, 1, 2); plot(1 : length(output) ,output); ylim([0 - 10 256 + 10]); 
+    title('Output sound signal','fontweight','bold'); 
+    xlabel('time'); ylabel('amplitude'); 
 
     % Write the data back to a File
     write_wav_file([out_dir_pc '/' filename], header, output);
@@ -72,4 +84,10 @@ function Y = de2bi(X)
     for i = 1 : size(X, 1)
         Y(i, :) = bitget(X(i), 8 : -1 : 1);
     end
+end
+
+function [ textBits ] = text2bits(text)
+    textBytes = unicode2native(text)';
+    textBitsMatrix = de2bi(textBytes);
+    textBits = reshape(textBitsMatrix', length(textBitsMatrix(:)), 1);
 end

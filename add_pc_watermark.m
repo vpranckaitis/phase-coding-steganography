@@ -2,7 +2,12 @@ function add_pc_watermark(watermark, file_path, filename)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 
+    % Retrieve global variables
+
+    [l, dft_impl, idft_impl] = global_vars_pc();
     [in_dir, out_dir_pc, ~] = global_folders();
+
+    % Analyze the specified aprameters set defaults wehere needed
 
     if nargin < 1
         watermark = 'Tekstas uzslepimui';
@@ -23,7 +28,6 @@ function add_pc_watermark(watermark, file_path, filename)
     textBits = text2bits(watermark);
 
     m = length(textBits);
-    [l, dft_impl, idft_impl] = global_vars_pc();
     display(sprintf('segment size: %d', l));
     display(sprintf('Text length: %d', length(watermark)));
 
@@ -39,6 +43,7 @@ function add_pc_watermark(watermark, file_path, filename)
     output = zeros(size(input));
 
     tic
+
     for i = 1 : (length(input) / l)
         segmentStart = (i - 1) * l + 1;
         segmentEnd = segmentStart + l - 1;
@@ -53,26 +58,36 @@ function add_pc_watermark(watermark, file_path, filename)
         figure(min([i 2]))
         subplot(3, 1, 1); 
         plot(1 : length(theta), theta, 'r'); ylim([-2 * pi 2 * pi]); 
-        title(sprintf('Phase values of segment %d before shifting phases', i),'fontweight','bold'); 
+        title(sprintf( ... 
+            'Phase values of segment %d before shifting phases', i), ...
+            'fontweight', 'bold'); 
         xlabel('frequency'); ylabel('phase, rad');
         
         subplot(3, 1, 2); 
         plot(1 : length(newTheta), newTheta, 'r'); ylim([-2 * pi 2 * pi]);
-        title(sprintf('Phase values of segment %d after shifting phases', i),'fontweight','bold'); 
+        title(sprintf( ... 
+            'Phase values of segment %d after shifting phases', i), ...
+            'fontweight', 'bold'); 
         xlabel('frequency'); ylabel('phase, rad');
     end
+    
     toc
 
     figure(3)
 
     subplot(2, 1, 1); 
-    plot(1 : length(input), input); ylim([0 - 10 256 + 10]); 
-    title('Input sound signal','fontweight','bold'); 
-    xlabel('time'); ylabel('amplitude'); 
+    plot(1 : length(input), input);
+    ylim([0 - 10 256 + 10]); 
+    title('Input sound signal', 'fontweight', 'bold'); 
+    xlabel('time');
+    ylabel('amplitude'); 
     
-    subplot(2, 1, 2); plot(1 : length(output) ,output); ylim([0 - 10 256 + 10]); 
-    title('Output sound signal','fontweight','bold'); 
-    xlabel('time'); ylabel('amplitude'); 
+    subplot(2, 1, 2); 
+    plot(1 : length(output), output);
+    ylim([0 - 10 256 + 10]); 
+    title('Output sound signal', 'fontweight', 'bold'); 
+    xlabel('time');
+    ylabel('amplitude'); 
 
     % Write the data back to a File
     write_wav_file([out_dir_pc '/' filename], header, output);

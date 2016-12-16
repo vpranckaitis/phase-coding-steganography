@@ -45,7 +45,8 @@ function [recovered_watermark] = ...
     one_delay = one_delay / 1000;
 
     nx = length(input);                         % size of signal
-    w = hamming(bitrate * segment_length / 2);  % hamming window
+%   w = hamming(bitrate * segment_length / 2);  % hamming window
+    w = hamming(segment_length);                % hamming window
     nw = length(w);                             % size of window
     pos = 1;
 
@@ -76,7 +77,26 @@ function [recovered_watermark] = ...
             decision_signal(pos) = last_recorded_bit;
         end        
     end
+        
+    figure(2);
+    hold on;
+    axis([-20, length(decision_signal), -0.1, 1.1]);
 
+    subplot(3, 1, 1);
+    zero_mixer_plot = plot(decision_signal);
+    set(zero_mixer_plot, 'Color', 'blue', 'LineWidth', 0.5);
+    title('Decision signal', 'fontweight', 'bold');
+
+    subplot(3, 1, 2);
+    one_mixer_plot = plot(one_delay_signal);
+    set(one_mixer_plot, 'Color', 'green', 'LineWidth', 0.5);
+    title('One delay signal', 'fontweight', 'bold'); 
+    
+    subplot(3, 1, 3);
+    zero_mixer_plot = plot(zero_delay_signal);
+    set(zero_mixer_plot, 'Color', 'red', 'LineWidth', 0.5);
+    title('Zero delay signal', 'fontweight', 'bold'); 
+    
     current_bit = 2;
     current_run = 0;
     decoded_bit_string = [];
@@ -91,7 +111,7 @@ function [recovered_watermark] = ...
             current_run = current_run + 1;
         else
             % Calculate the number of corresponding bits we decoded
-            seg = current_run / round(1102);
+            seg = current_run / round(segment_length);
             if ceil(seg) - seg > 0.9
                 dsegments = ceil(seg);
             else
@@ -99,7 +119,7 @@ function [recovered_watermark] = ...
             end
             nbits = round(seg);
             for i = 1 : nbits,
-                decoded_bit_string = [decoded_bit_string, current_bit];
+                decoded_bit_string = [decoded_bit_string; current_bit];
             end
 
             current_bit = decision_signal(pos);
@@ -115,18 +135,35 @@ function [recovered_watermark] = ...
     figure(1);
     hold on;
     axis([-20, length(decision_signal), -0.1, 1.1]);
-    plt = plot(decision_signal);
-    set(plt, 'Color', 'green', 'LineWidth', 2.5);
+%     subplot(3, 1, 3);
+    decision_plot = plot(decision_signal);
+    set(decision_plot, 'Color', 'black', 'LineWidth', 1.5);
 
-    figure(3);
-    plot(one_delay_signal - zero_delay_signal);
-    %figure(4);
-    %plot(one_delay_signal);
-    %figure(5);
-    %plot(zero_delay_signal);
+%     figure(3);
+%     plot(one_delay_signal - zero_delay_signal);
+%     figure(4);
+%     plot(one_delay_signal);
+%     figure(5);
+%     plot(zero_delay_signal);
 
-    %recovered_watermark = bin2dec(num2str(decoded_bit_string));
-    test = num2str(decoded_bit_string)
-    recovered_watermark = char(bin2dec(reshape(test(1:length(test)),[],8))).';
+%    recovered_watermark = bin2dec(num2str(decoded_bit_string));
+%     test = num2str(decoded_bit_string)
+%     recovered_watermark = char(bin2dec(reshape(test(1:length(test)),[],8))).';
+    decoded_bit_string
+    recovered_watermark = bits2text(decoded_bit_string)
 
+end
+
+function Y = bi2de(X)
+    Y = zeros(size(X, 1), 1);
+    weights = 2 .^ (7 : -1 : 0);
+    for i = 1 : size(X, 1) 
+        Y(i) = sum(X(i, :) * weights');
+    end
+end
+
+function [ text ] = bits2text(textBits)
+    textBitsMatrix = reshape(textBits, 8, round(length(textBits) / 8))';
+    textBytes = bi2de(textBitsMatrix);
+    text = native2unicode(textBytes)';
 end

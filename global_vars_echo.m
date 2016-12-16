@@ -10,8 +10,8 @@ function [init_amplitude, Fs, zero_delay, one_delay, decay_rate] = ...
     %  - http://www.tmrfindia.org/ijcsa/v10i11.pdf
 
     init_amplitude = 0.2;
-    Fs = 4410; % Frequency of sampling
-    zero_delay = 0.75; %2; %0.61; % Should result in 27 samples
+    Fs = 44100; % Frequency of sampling
+    zero_delay = 0.4; %2; %0.61; % Should result in 27 samples
     one_delay = 0.9; %4; %0.73; % Should result in 32 samples
     decay_rate = 0.8; % Must be between 0.3 and 0.85
 end

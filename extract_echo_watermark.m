@@ -84,8 +84,8 @@ function [recovered_watermark] = ...
     decoded_bit_count = 0;
 
     % Predict the size of the decoded bit String (bit count)
-    bits_to_decode_size_prediction = ceil(length(decision_signal) / 8) ...
-        * 8;
+    bits_to_decode_size_prediction = ceil(length(decision_signal) / 8 ...
+        / segment_length) * 8;
 
     % Initialize the decoded bit String with all zeroes
     decoded_bit_string = zeros(bits_to_decode_size_prediction, 1);
@@ -106,8 +106,8 @@ function [recovered_watermark] = ...
             number_of_bits = round(segment);
             last_bit_position = decoded_bit_count + number_of_bits;
             
-            decoded_bit_string(decoded_bit_count : last_bit_position) = ...
-                current_bit;
+            decoded_bit_string(decoded_bit_count + 1 : last_bit_position, ...
+                1) = current_bit;
 
             decoded_bit_count = last_bit_position;
 

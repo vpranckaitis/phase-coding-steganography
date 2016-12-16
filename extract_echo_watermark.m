@@ -77,26 +77,7 @@ function [recovered_watermark] = ...
             decision_signal(pos) = last_recorded_bit;
         end        
     end
-        
-    figure(2);
-    hold on;
-    axis([-20, length(decision_signal), -0.1, 1.1]);
 
-    subplot(3, 1, 1);
-    zero_mixer_plot = plot(decision_signal);
-    set(zero_mixer_plot, 'Color', 'blue', 'LineWidth', 0.5);
-    title('Decision signal', 'fontweight', 'bold');
-
-    subplot(3, 1, 2);
-    one_mixer_plot = plot(one_delay_signal);
-    set(one_mixer_plot, 'Color', 'green', 'LineWidth', 0.5);
-    title('One delay signal', 'fontweight', 'bold'); 
-    
-    subplot(3, 1, 3);
-    zero_mixer_plot = plot(zero_delay_signal);
-    set(zero_mixer_plot, 'Color', 'red', 'LineWidth', 0.5);
-    title('Zero delay signal', 'fontweight', 'bold'); 
-    
     current_bit = 2;
     current_run = 0;
     decoded_bit_string = [];
@@ -129,15 +110,60 @@ function [recovered_watermark] = ...
         end
     end
 
-    runs
-    deciders
+    runs;
+    deciders;
 
+    % Plot out decision signals for debugging purposes
     figure(1);
+    subplot(2, 1, 1);
     hold on;
-    axis([-20, length(decision_signal), -0.1, 1.1]);
-%     subplot(3, 1, 3);
     decision_plot = plot(decision_signal);
     set(decision_plot, 'Color', 'black', 'LineWidth', 1.5);
+    axis([-20, length(decision_signal), -0.1, 1.1]);
+
+    % Plot out decision signals
+    figure(2);
+    hold on;
+
+    subplot(3, 1, 1);
+    hold on;
+    zero_mixer_plot = plot(decision_signal);
+    set(zero_mixer_plot, 'Color', 'blue', 'LineWidth', 0.5);
+    axis([-20, length(decision_signal), -0.1, 1.1]);
+    title('Decision signal', 'fontweight', 'bold');
+    xlabel('Time');
+    ylabel('Offset intensity');
+
+    subplot(3, 1, 2);
+    hold on;
+    one_mixer_plot = plot(one_delay_signal);
+    set(one_mixer_plot, 'Color', 'green', 'LineWidth', 0.5);
+    axis([-20, length(one_delay_signal), -0.1, 1.1]);
+    title('One delay signal', 'fontweight', 'bold');
+    xlabel('Time');
+    ylabel('Offset intensity');
+
+    subplot(3, 1, 3);
+    hold on;
+    zero_mixer_plot = plot(zero_delay_signal);
+    set(zero_mixer_plot, 'Color', 'red', 'LineWidth', 0.5);
+    axis([-20, length(zero_delay_signal), -0.1, 1.1]);
+    title('Zero delay signal', 'fontweight', 'bold');
+    xlabel('Time');
+    ylabel('Offset intensity');
+
+    % Plot out soudn wave signal aplitudes
+    figure(3);
+    hold on;
+
+    subplot(3, 1, 3); 
+    hold on;
+    plot(1 : length(input), input);
+    ylim([0 - 10 512 + 10]); 
+    title('Encoded sound signal', 'fontweight', 'bold'); 
+    xlabel('time');
+    ylabel('amplitude');
+
 
 %     figure(3);
 %     plot(one_delay_signal - zero_delay_signal);
@@ -146,9 +172,6 @@ function [recovered_watermark] = ...
 %     figure(5);
 %     plot(zero_delay_signal);
 
-%    recovered_watermark = bin2dec(num2str(decoded_bit_string));
-%     test = num2str(decoded_bit_string)
-%     recovered_watermark = char(bin2dec(reshape(test(1:length(test)),[],8))).';
     decoded_bit_string
     recovered_watermark = bits2text(decoded_bit_string)
 

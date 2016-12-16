@@ -28,7 +28,7 @@ function add_pc_watermark(watermark, file_path, filename)
     textBits = text2bits(watermark);
 
     m = length(textBits);
-    display(sprintf('segment size: %d', l));
+    display(sprintf('Segment size: %d', l));
     display(sprintf('Text length: %d', length(watermark)));
 
     % Compute 'deltaTheta' – the amount to shift phases
@@ -55,7 +55,8 @@ function add_pc_watermark(watermark, file_path, filename)
         Z = R .* exp(1i * newTheta);
         output(segmentStart : segmentEnd) = idft_impl(Z);
 
-        figure(min([i 2]))
+        figure(min([i 2]));
+        hold on;
         subplot(3, 1, 1); 
         plot(1 : length(theta), theta, 'r'); ylim([-2 * pi 2 * pi]); 
         title(sprintf( ... 
@@ -73,7 +74,8 @@ function add_pc_watermark(watermark, file_path, filename)
     
     toc
 
-    figure(3)
+    figure(3);
+    hold on;
 
     subplot(2, 1, 1); 
     plot(1 : length(input), input);

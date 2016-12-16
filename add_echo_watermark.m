@@ -62,6 +62,9 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     length_in_s = round(length(input) / Fs);
     watermark_size = size(watermark_bits);
 
+    display(sprintf('Segment size: %d', segment_length));
+    display(sprintf('Text length: %d', watermark_size));
+
     if watermark_size >= length_in_s * bitrate,
         throw(MException('EchoHider:NoSpace', ...
             'Not enough cover audio for the given bitrate (%d b/s, needed: %d bits, have: %d bits)\n', ...
@@ -115,8 +118,9 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     zero_mixer_signal = 1 - one_mixer_signal;
     original_mixer_signal = 1 - (zero_mixer_signal + one_mixer_signal);
 
-    size(zero_delay_signal);
-    size(zero_mixer_signal);
+    % Debug only
+%     size(zero_delay_signal);
+%     size(zero_mixer_signal);
 
     zero_signal = zero_delay_signal .* zero_mixer_signal;
     one_signal = one_delay_signal .* one_mixer_signal;
@@ -126,32 +130,48 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     
     toc
 
+    % Write the data back to a File
+    output = processed_wave;
+
+    % Plot out mixer signals
     figure(1);
     hold on;
-    axis([-20, length(original_mixer_signal), -0.1, 1.1]);
 
     subplot(2, 1, 1);
     one_mixer_plot = plot(one_mixer_signal);
     set(one_mixer_plot, 'Color', 'green', 'LineWidth', 2);
-    title('One mixer signal', 'fontweight', 'bold'); 
-    
+    axis([-20, length(one_mixer_signal), -0.1, 1.1]);
+    title('One mixer signal', 'fontweight', 'bold');
+    xlabel('Time');
+    ylabel('Offset intensity');
+
     subplot(2, 1, 2);
     zero_mixer_plot = plot(zero_mixer_signal);
     set(zero_mixer_plot, 'Color', 'red', 'LineWidth', 2);
-    title('Zero mixer signal', 'fontweight', 'bold'); 
-    
-    % Write the data back to a File
-    output = processed_wave;
+    axis([-20, length(one_mixer_signal), -0.1, 1.1]);
+    title('Zero mixer signal', 'fontweight', 'bold');
+    xlabel('Time');
+    ylabel('Offset intensity');
 
-    figure(2)
+    % Plot out soudn wave signal aplitudes
+    figure(3);
+    hold on;
 
-    subplot(2, 1, 1);
+    subplot(3, 1, 1); 
+    hold on;
     plot(1 : length(input), input);
-    ylim([0 - 10 256 + 10]);
-
-    subplot(2, 1, 2);
+    ylim([0 - 10 512 + 10]); 
+    title('Input sound signal', 'fontweight', 'bold'); 
+    xlabel('time');
+    ylabel('amplitude');
+    
+    subplot(3, 1, 2);
+    hold on;
     plot(1 : length(output), output);
-    ylim([0 - 10 256 + 10]);
+    ylim([0 - 10 512 + 10]); 
+    title('Output sound signal', 'fontweight', 'bold'); 
+    xlabel('time');
+    ylabel('amplitude');
 
     write_wav_file([out_dir_echo '/' filename], header, output);
 

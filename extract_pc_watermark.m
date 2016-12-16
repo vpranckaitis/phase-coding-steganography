@@ -35,9 +35,14 @@ function [recovered_watermark] = ...
     recovered_watermark = bits2text(textBits);
     
     figure(1);
-    subplot(3, 1, 3); plot(1 : length(theta), theta, 'r'); ylim([-2 * pi 2 * pi]);
-    title('Phase values of sample 1 read from stego audio','fontweight','bold'); 
-    xlabel('frequency'); ylabel('phase, rad');
+    hold on;
+    subplot(3, 1, 3);
+    plot(1 : length(theta), theta, 'r');
+    ylim([-2 * pi 2 * pi]);
+    title('Phase values of sample 1 read from stego audio', ...
+        'fontweight', 'bold');
+    xlabel('frequency');
+    ylabel('phase, rad');
 end
 
 function Y = bi2de(X)

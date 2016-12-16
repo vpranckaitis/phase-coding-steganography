@@ -80,9 +80,19 @@ function [recovered_watermark] = ...
 
     current_bit = 2;
     current_run = 0;
-    decoded_bit_string = [];
+    decoded_segment_count = 0;
+    decoded_bit_count = 0;
+
+    % Predict the size of the decoded bit String (bit count)
+    bits_to_decode_size_prediction = ceil(length(decision_signal) / 8) ...
+        * 8;
+
+    % Initialize the decoded bit String with all zeroes
+    decoded_bit_string = zeros(bits_to_decode_size_prediction, 1);
+
     runs = [];
     deciders = [];
+
     for pos = 1 : length(decision_signal),
         if current_bit == 2
             current_bit = decision_signal(pos);
@@ -92,26 +102,35 @@ function [recovered_watermark] = ...
             current_run = current_run + 1;
         else
             % Calculate the number of corresponding bits we decoded
-            seg = current_run / round(segment_length);
-            if ceil(seg) - seg > 0.9
-                dsegments = ceil(seg);
-            else
-                dsegments = floor(seg);
-            end
-            nbits = round(seg);
-            for i = 1 : nbits,
-                decoded_bit_string = [decoded_bit_string; current_bit];
-            end
+            segment = current_run / round(segment_length);
+            number_of_bits = round(segment);
+            last_bit_position = decoded_bit_count + number_of_bits;
+            
+            decoded_bit_string(decoded_bit_count : last_bit_position) = ...
+                current_bit;
+
+            decoded_bit_count = last_bit_position;
+
+%             bits_to_add(1 : number_of_bits, 1) = current_bit;
+%             decoded_bit_string = [decoded_bit_string; bits_to_add];
+%             bits_to_add = [];
 
             current_bit = decision_signal(pos);
+
+            % Debug only
             runs = [runs, current_run];
-            deciders = [deciders, seg];
+            deciders = [deciders, segment];
+
             current_run = 0;
+            decoded_segment_count = decoded_segment_count + 1;
         end
     end
 
-    runs;
-    deciders;
+    % Debug only
+    decoded_segment_count
+    decoded_bit_count
+%     runs;
+%     deciders;
 
     % Plot out decision signals for debugging purposes
     figure(1);

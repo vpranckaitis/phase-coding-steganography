@@ -35,8 +35,8 @@ function [recovered_watermark] = ...
     [~, input] = read_wav_file(full_path);
 
 
-    segment_length = round(Fs / 16);
-    segment_transition_time = round(segment_length / 32);
+    segment_length = round(Fs / 8);
+    segment_transition_time = round(segment_length / 16);
 
     bitrate = round(Fs / (segment_length + segment_transition_time));
 

@@ -13,8 +13,13 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     % Analyze the specified aprameters set defaults wehere needed
 
     if nargin < 1
-%         watermark = 'test dideis ir baisus';
-        watermark = 'test';
+%        watermark = 'test didelis ir baisus';
+%        watermark = 'test';
+%        watermark = 'Tekstas uzslepimui';
+%        watermark = 'Slaptas Tekstas';
+%        watermark = 'hidden txt';
+        watermark = 'scrt txt';
+
     end
 
     if nargin < 2
@@ -54,13 +59,13 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     zero_delay = zero_delay / 1000;
     one_delay = one_delay / 1000;
 
-    segment_length = round(Fs / 16);
-    segment_transition_time = round(segment_length / 32);
+    segment_length = round(Fs / 8);
+    segment_transition_time = round(segment_length / 16);
 
     bitrate = round(Fs / (segment_length + segment_transition_time));
 
     length_in_s = round(length(input) / Fs);
-    watermark_size = size(watermark_bits);
+    watermark_size = size(watermark_bits, 1);
 
     display(sprintf('Segment size: %d', segment_length));
     display(sprintf('Text length: %d', watermark_size));
@@ -119,8 +124,8 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     original_mixer_signal = 1 - (zero_mixer_signal + one_mixer_signal);
 
     % Debug only
-%     size(zero_delay_signal);
-%     size(zero_mixer_signal);
+     size(zero_delay_signal);
+     size(zero_mixer_signal);
 
     zero_signal = zero_delay_signal .* zero_mixer_signal;
     one_signal = one_delay_signal .* one_mixer_signal;

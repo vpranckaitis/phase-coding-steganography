@@ -1,5 +1,5 @@
-function [recovered_watermark] = extract_echo_watermark(file_path, ...
-    filename, Fs, sample_size, zero_delay, one_delay)
+function extract_echo_watermark(file_path, filename, Fs, sample_size, ...
+    zero_delay, one_delay)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 
@@ -17,7 +17,7 @@ function [recovered_watermark] = extract_echo_watermark(file_path, ...
     
     if nargin < 2
  %       filename = 'carlin_blow_it.wav';
-        filename = '66.wav';
+        filename = '69.wav';
     end
 
     if nargin < 3
@@ -45,9 +45,35 @@ function [recovered_watermark] = extract_echo_watermark(file_path, ...
 
 %    [~, input] = helpers.read_wav_file(full_path);
     [input_stereo, ~] = audioread(full_path, 'native');
+    
+    channel_count = size(input_stereo, 2);
 
-    input_mono = double(input_stereo(:, 1));
+    for channel_index = 1 : channel_count
+        input_mono = double(input_stereo(:, channel_index));
 
+        decoded_watermark = algorithm(input_mono, Fs, sample_size, ...
+            zero_delay, one_delay)
+
+        % Experiment 1 - compute the similiraty between the expected result
+        % and the decoded value
+        original_watermark = 'Tekstas uzslepimui';
+                %'scrt txt'; % 'ж∆ди@ири'; 'xxxX xXx'; 'xyxy 0%$';
+
+        similarity = compute_vector_similarity( ...
+            helpers.text2bits(original_watermark), ...
+            helpers.text2bits(decoded_watermark));
+
+        % Debug only
+        similarity
+
+    end
+
+end
+
+function [recovered_watermark] = algorithm(input_bits, Fs, sample_size, ...
+    zero_delay, one_delay)
+    % UNTITLED Summary of this function goes here
+    %	Detailed explanation goes here 
 
     % divide up a signal into windows
     zero_delay = zero_delay / 1000;
@@ -56,19 +82,19 @@ function [recovered_watermark] = extract_echo_watermark(file_path, ...
     segment_length = round(Fs / sample_size);
     segment_transition_time = round(segment_length / (sample_size * 2));
 
-    length_in_s = round(length(input_mono) / Fs);
+    length_in_s = round(length(input_bits) / Fs);
 
     fprintf('Attempting to extract and decode watermark data in %d seconds of audio (%d bits max) at %d b/s\n', ...
         length_in_s, length_in_s * sample_size, sample_size);
 
-    nx = length(input_mono);                    % size of signal
+    nx = length(input_bits);                    % size of signal
 %   w = hamming(bitrate * segment_length / 2);  % hamming window
     w = hamming(segment_length);                % hamming window
     nw = length(w);                             % size of window
 
     % Calculate starting position so that any silence in the begining of
     % the recording can be safely ignored
-    pos = find(input_mono, 1);
+    pos = find(input_bits, 1);
 
     % NOTE: the linter recomended preallocation here!
     zero_delay_signal = zeros(nx, 1);
@@ -79,7 +105,7 @@ function [recovered_watermark] = extract_echo_watermark(file_path, ...
 
     % while enough signal left
     while (pos + nw <= nx)                       
-        y = input_mono(pos : pos + nw - 1) .* w;     % make window y
+        y = input_bits(pos : pos + nw - 1) .* w;     % make window y
 
         % Only process the signal if the segment (vector y) contains some
         % non-zero values. There will be no echoes in an empty segment :)
@@ -219,19 +245,10 @@ function [recovered_watermark] = extract_echo_watermark(file_path, ...
 
     subplot(3, 1, 3); 
     hold on;
-    plot(1 : length(input_mono), input_mono);
+    plot(1 : length(input_bits), input_bits);
     ylim([0 - 10 512 + 10]); 
     title('Encoded sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');
-
-    % Experiment 1 - compute the similiraty between the expected result and
-    % the decoded value
-    original_watermark = 'scrt txt'; % 'ж∆ди@ири'; 'xxxX xXx'; 'xyxy 0%$';
-    similarity = compute_vector_similarity( ...
-        helpers.text2bits(original_watermark), decoded_bit_string);
-
-    % Debug only
-    similarity
 
 end

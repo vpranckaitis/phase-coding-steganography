@@ -4,8 +4,8 @@ function add_pc_watermark(watermark, file_path, filename)
 
     % Retrieve global variables
 
-    [l, dft_impl, idft_impl] = global_vars_pc();
-    [in_dir, out_dir_pc, ~] = global_folders();
+    [l, dft_impl, idft_impl] = globals.global_vars_pc();
+    [in_dir, out_dir_pc, ~] = globals.global_folders();
 
     % Analyze the specified aprameters set defaults wehere needed
 
@@ -23,9 +23,9 @@ function add_pc_watermark(watermark, file_path, filename)
 
     % Read the data from the File
     full_path = [file_path '/' filename];
-    [header, input] = read_wav_file(full_path);
+    [header, input] = helpers.read_wav_file(full_path);
 
-    textBits = text2bits(watermark);
+    textBits = helpers.text2bits(watermark);
 
     m = length(textBits);
     display(sprintf('Segment size: %d', l));
@@ -92,19 +92,6 @@ function add_pc_watermark(watermark, file_path, filename)
     ylabel('amplitude'); 
 
     % Write the data back to a File
-    write_wav_file([out_dir_pc '/' filename], header, output);
+    helpers.write_wav_file([out_dir_pc '/' filename], header, output);
 
-end
-
-function Y = de2bi(X)
-    Y = zeros(size(X, 1), 8);
-    for i = 1 : size(X, 1)
-        Y(i, :) = bitget(X(i), 8 : -1 : 1);
-    end
-end
-
-function [ textBits ] = text2bits(text)
-    textBytes = unicode2native(text)';
-    textBitsMatrix = de2bi(textBytes);
-    textBits = reshape(textBitsMatrix', length(textBitsMatrix(:)), 1);
 end

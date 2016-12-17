@@ -6,9 +6,9 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     % Retrieve global variables
 
     [alpha_default, Fs_default, zero_delay_default, one_delay_default, ...
-        decay_rate_default] = global_vars_echo();
+        decay_rate_default] = globals.global_vars_echo();
 
-    [in_dir, ~, out_dir_echo] = global_folders();
+    [in_dir, ~, out_dir_echo] = globals.global_folders();
 
     % Analyze the specified aprameters set defaults wehere needed
 
@@ -19,7 +19,6 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
 %        watermark = 'Slaptas Tekstas';
 %        watermark = 'hidden txt';
         watermark = 'scrt txt';
-
     end
 
     if nargin < 2
@@ -48,9 +47,9 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
 
     % Read the data from the File
     full_path = [file_path '/' filename];
-    [header, input] = read_wav_file(full_path);
+    [header, input] = helpers.read_wav_file(full_path);
 
-    watermark_bits = text2bits(watermark);
+    watermark_bits = helpers.text2bits(watermark);
 %     watermark_bits = [ 0; 1; 0; 1; 0; 1; 0; watermark_bits ];
 
     zero_delay_signal = single_echo(input, Fs, zero_delay, decay_rate);
@@ -178,19 +177,6 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     xlabel('time');
     ylabel('amplitude');
 
-    write_wav_file([out_dir_echo '/' filename], header, output);
+    helpers.write_wav_file([out_dir_echo '/' filename], header, output);
 
-end
-
-function Y = de2bi(X)
-    Y = zeros(size(X, 1), 8);
-    for i = 1 : size(X, 1)
-        Y(i, :) = bitget(X(i), 8 : -1 : 1);
-    end
-end
-
-function [ textBits ] = text2bits(text)
-    textBytes = unicode2native(text)';
-    textBitsMatrix = de2bi(textBytes);
-    textBits = reshape(textBitsMatrix', length(textBitsMatrix(:)), 1);
 end

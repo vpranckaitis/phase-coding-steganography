@@ -5,9 +5,9 @@ function [recovered_watermark] = ...
     %   Detailed explanation goes here
 
     [~, Fs_default, zero_delay_default, one_delay_default, ~] = ...
-        global_vars_echo();
+        globals.global_vars_echo();
 
-    [~, ~, out_dir_echo] = global_folders();
+    [~, ~, out_dir_echo] = globals.global_folders();
     
     if nargin < 1
         file_path = out_dir_echo;
@@ -32,7 +32,7 @@ function [recovered_watermark] = ...
     % Read the data from the File
     full_path = [file_path '/' filename];
 
-    [~, input] = read_wav_file(full_path);
+    [~, input] = helpers.read_wav_file(full_path);
 
 
     segment_length = round(Fs / 8);
@@ -192,20 +192,6 @@ function [recovered_watermark] = ...
 %     plot(zero_delay_signal);
 
     decoded_bit_string
-    recovered_watermark = bits2text(decoded_bit_string)
+    recovered_watermark = helpers.bits2text(decoded_bit_string)
 
-end
-
-function Y = bi2de(X)
-    Y = zeros(size(X, 1), 1);
-    weights = 2 .^ (7 : -1 : 0);
-    for i = 1 : size(X, 1) 
-        Y(i) = sum(X(i, :) * weights');
-    end
-end
-
-function [ text ] = bits2text(textBits)
-    textBitsMatrix = reshape(textBits, 8, round(length(textBits) / 8))';
-    textBytes = bi2de(textBitsMatrix);
-    text = native2unicode(textBytes)';
 end

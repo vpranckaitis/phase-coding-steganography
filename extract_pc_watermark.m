@@ -3,7 +3,8 @@ function [recovered_watermark] = ...
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
  
-    [~, out_dir_pc, ~] = global_folders();
+    [~, out_dir_pc, ~] = globals.global_folders();
+    [ l, dft_impl, ~ ] = globals.global_vars_pc();
 
     if nargin < 1
         textLength = 18;
@@ -20,10 +21,8 @@ function [recovered_watermark] = ...
     % Read the data from the File
     full_path = [file_path '/' filename];
 
-    [~, input] = read_wav_file(full_path);
+    [~, input] = helpers.read_wav_file(full_path);
 
-
-    [ l, dft_impl, ~ ] = global_vars_pc();
     m = textLength * 8;
 
     Z = dft_impl(input(1 : l));
@@ -32,7 +31,7 @@ function [recovered_watermark] = ...
     phases = theta((l / 2 - m + 1) : (l / 2));
     textBits = phases < 0;
 
-    recovered_watermark = bits2text(textBits);
+    recovered_watermark = helpers.bits2text(textBits);
     
     figure(1);
     hold on;
@@ -43,18 +42,5 @@ function [recovered_watermark] = ...
         'fontweight', 'bold');
     xlabel('frequency');
     ylabel('phase, rad');
-end
 
-function Y = bi2de(X)
-    Y = zeros(size(X, 1), 1);
-    weights = 2 .^ (7 : -1 : 0);
-    for i = 1 : size(X, 1) 
-        Y(i) = sum(X(i, :) * weights');
-    end
-end
-
-function [ text ] = bits2text(textBits)
-    textBitsMatrix = reshape(textBits, 8, length(textBits) / 8)';
-    textBytes = bi2de(textBitsMatrix);
-    text = native2unicode(textBytes)';
 end

@@ -5,10 +5,9 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
 
     % Retrieve global variables
 
+    [in_dir, ~, out_dir_echo] = globals.global_folders();
     [alpha_default, Fs_default, zero_delay_default, one_delay_default, ...
         decay_rate_default] = globals.global_vars_echo();
-
-    [in_dir, ~, out_dir_echo] = globals.global_folders();
 
     % Analyze the specified aprameters set defaults wehere needed
 

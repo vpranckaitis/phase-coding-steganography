@@ -2,12 +2,16 @@ function [recovered_watermark] = ...
     extract_pc_watermark(textLength, file_path, filename)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
- 
+
+    % Retrieve global variables
+
     [~, out_dir_pc, ~] = globals.global_folders();
     [ l, dft_impl, ~ ] = globals.global_vars_pc();
 
+    % Analyze the specified aprameters set defaults wehere needed
+
     if nargin < 1
-        textLength = 18;
+        textLength = 4;
     end
     
     if nargin < 2
@@ -29,7 +33,7 @@ function [recovered_watermark] = ...
     [~, theta] = magnitude_and_phase(Z);
 
     phases = theta((l / 2 - m + 1) : (l / 2));
-    textBits = phases < 0;
+    textBits = phases < 0
 
     recovered_watermark = helpers.bits2text(textBits);
     

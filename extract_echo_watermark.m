@@ -1,13 +1,15 @@
 function [recovered_watermark] = ...
     extract_echo_watermark(file_path, filename, Fs, zero_delay, one_delay)
-
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 
+    % Retrieve global variables
+
+    [~, ~, out_dir_echo] = globals.global_folders();
     [~, Fs_default, zero_delay_default, one_delay_default, ~] = ...
         globals.global_vars_echo();
 
-    [~, ~, out_dir_echo] = globals.global_folders();
+    % Analyze the specified aprameters set defaults wehere needed
     
     if nargin < 1
         file_path = out_dir_echo;

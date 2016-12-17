@@ -4,13 +4,13 @@ function add_pc_watermark(watermark, file_path, filename)
 
     % Retrieve global variables
 
-    [l, dft_impl, idft_impl] = globals.global_vars_pc();
     [in_dir, out_dir_pc, ~] = globals.global_folders();
+    [l, dft_impl, idft_impl] = globals.global_vars_pc();
 
     % Analyze the specified aprameters set defaults wehere needed
 
     if nargin < 1
-        watermark = 'Tekstas uzslepimui';
+        watermark = 'test';
     end
     
     if nargin < 2

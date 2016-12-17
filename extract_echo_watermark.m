@@ -1,13 +1,13 @@
-function [recovered_watermark] = ...
-    extract_echo_watermark(file_path, filename, Fs, zero_delay, one_delay)
+function [recovered_watermark] = extract_echo_watermark(file_path, ...
+    filename, Fs, sample_size, zero_delay, one_delay)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 
     % Retrieve global variables
 
     [~, ~, out_dir_echo] = globals.global_folders();
-    [~, Fs_default, zero_delay_default, one_delay_default, ~] = ...
-        globals.global_vars_echo();
+    [~, Fs_default, sample_size_default, zero_delay_default, ...
+    	one_delay_default, ~] = globals.global_vars_echo();
 
     % Analyze the specified aprameters set defaults wehere needed
     
@@ -24,10 +24,14 @@ function [recovered_watermark] = ...
     end
 
     if nargin < 4
-        zero_delay = zero_delay_default;
+        sample_size = sample_size_default;
     end
 
     if nargin < 5
+        zero_delay = zero_delay_default;
+    end
+
+    if nargin < 6
         one_delay = one_delay_default;
     end
 
@@ -37,14 +41,17 @@ function [recovered_watermark] = ...
     [~, input] = helpers.read_wav_file(full_path);
 
 
-    segment_length = round(Fs / 8);
-    segment_transition_time = round(segment_length / 16);
-
-    bitrate = round(Fs / (segment_length + segment_transition_time));
-
     % divide up a signal into windows
     zero_delay = zero_delay / 1000;
     one_delay = one_delay / 1000;
+
+    segment_length = round(Fs / sample_size);
+    segment_transition_time = round(segment_length / (sample_size * 2));
+
+    length_in_s = round(length(input) / Fs);
+
+    fprintf('Attempting to extract and decode watermark data in %d seconds of audio (%d bits max) at %d b/s\n', ...
+        length_in_s, length_in_s * sample_size, sample_size);
 
     nx = length(input);                         % size of signal
 %   w = hamming(bitrate * segment_length / 2);  % hamming window

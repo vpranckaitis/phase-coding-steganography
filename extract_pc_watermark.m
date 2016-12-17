@@ -1,5 +1,5 @@
-function [recovered_watermark] = ... 
-    extract_pc_watermark(textLength, file_path, filename)
+function [recovered_watermark] = extract_pc_watermark(textLength, ...
+    file_path, filename)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 

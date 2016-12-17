@@ -1,13 +1,13 @@
 function [processed_wave] = add_echo_watermark(watermark, file_path, ...
-    filename, Fs, zero_delay, one_delay, decay_rate)
+    filename, Fs, sample_size, zero_delay, one_delay, decay_rate)
     % UNTITLED Summary of this function goes here
     %	Detailed explanation goes here
 
     % Retrieve global variables
 
     [in_dir, ~, out_dir_echo] = globals.global_folders();
-    [alpha_default, Fs_default, zero_delay_default, one_delay_default, ...
-        decay_rate_default] = globals.global_vars_echo();
+    [~, Fs_default, sample_size_default, zero_delay_default, ...
+       one_delay_default, decay_rate_default] = globals.global_vars_echo();
 
     % Analyze the specified aprameters set defaults wehere needed
 
@@ -33,14 +33,18 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     end
 
     if nargin < 5
-        zero_delay = zero_delay_default;
+        sample_size = sample_size_default;
     end
 
     if nargin < 6
-        one_delay = one_delay_default;
+        zero_delay = zero_delay_default;
     end
 
     if nargin < 7
+        one_delay = one_delay_default;
+    end
+
+    if nargin < 8
         decay_rate = decay_rate_default;
     end
 
@@ -48,19 +52,21 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     full_path = [file_path '/' filename];
     [header, input] = helpers.read_wav_file(full_path);
 
+
     watermark_bits = helpers.text2bits(watermark);
 %     watermark_bits = [ 0; 1; 0; 1; 0; 1; 0; watermark_bits ];
 
+
+    % divide up a signal into windows
     zero_delay_signal = single_echo(input, Fs, zero_delay, decay_rate);
     one_delay_signal = single_echo(input, Fs, one_delay, decay_rate);
 
+    % NOTE: not used anywhere
     zero_delay = zero_delay / 1000;
     one_delay = one_delay / 1000;
 
-    segment_length = round(Fs / 8);
-    segment_transition_time = round(segment_length / 16);
-
-    bitrate = round(Fs / (segment_length + segment_transition_time));
+    segment_length = round(Fs / sample_size);
+    segment_transition_time = round(segment_length / (sample_size * 2));
 
     length_in_s = round(length(input) / Fs);
     watermark_size = size(watermark_bits, 1);
@@ -68,14 +74,15 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     display(sprintf('Segment size: %d', segment_length));
     display(sprintf('Text length: %d', watermark_size));
 
-    if watermark_size >= length_in_s * bitrate,
+    if watermark_size >= length_in_s * sample_size,
         throw(MException('EchoHider:NoSpace', ...
-            'Not enough cover audio for the given bitrate (%d b/s, needed: %d bits, have: %d bits)\n', ...
-            bitrate, watermark_size, length_in_s * bitrate));
+            'Not enough cover audio for the given sample bitrate (%d b/s, needed: %d bits, have: %d bits)\n', ...
+            sample_size, watermark_size, length_in_s * sample_size));
     end
 
     fprintf('Attempting to embed %d bits of watermark data in %d seconds of audio (%d bits max) at %d b/s\n', ...
-        watermark_size, length_in_s, length_in_s * bitrate, bitrate);
+        watermark_size, length_in_s, length_in_s * sample_size, ...
+        sample_size);
 
     % Initialize the mixer signals
     one_mixer_signal = zeros(size(input, 1), 1);

@@ -55,7 +55,9 @@ function add_echo_watermark(watermark, file_path, ...
 
     % Read the data from the File
     full_path = [file_path '/' filename];
-    [input, ~] = helpers.read_wav_file(full_path);
+    [input_stereo, ~] = helpers.read_wav_file(full_path);
+    
+    input_mono = double(input_stereo(:, 1));
 
 
     watermark_bits = helpers.text2bits(watermark);
@@ -63,8 +65,8 @@ function add_echo_watermark(watermark, file_path, ...
 
 
     % divide up a signal into windows
-    zero_delay_signal = single_echo(input, Fs, zero_delay, decay_rate);
-    one_delay_signal = single_echo(input, Fs, one_delay, decay_rate);
+    zero_delay_signal = single_echo(input_mono, Fs, zero_delay, decay_rate);
+    one_delay_signal = single_echo(input_mono, Fs, one_delay, decay_rate);
 
     % NOTE: not used anywhere
     zero_delay = zero_delay / 1000;
@@ -76,7 +78,7 @@ function add_echo_watermark(watermark, file_path, ...
     % A formula for calcluting audio duration:
     %   time = FileLength / (Sample Rate * Channels * Bits per sample /8)
     % Taken from: https://social.msdn.microsoft.com/Forums/windows/en-US/5a92be69-3b4e-4d92-b1d2-141ef0a50c91/how-to-calculate-duration-of-wave-file-from-its-size
-    length_in_s = round(length(input) / (Fs * sample_size / 8));
+    length_in_s = round(length(input_mono) / (Fs * sample_size / 8));
     watermark_size = size(watermark_bits, 1);
 
     display(sprintf('Segment size: %d', segment_length));
@@ -93,10 +95,10 @@ function add_echo_watermark(watermark, file_path, ...
         sample_size);
 
     % Initialize the mixer signals
-    one_mixer_signal = zeros(size(input, 1), 1);
+    one_mixer_signal = zeros(size(input_mono, 1), 1);
     % NOTE: followed linter's advice on preallocation!
-%     zero_mixer_signal = zeros(size(input, 1), 1);
-%     original_mixer_signal = zeros(size(input, 1), 1);
+%     zero_mixer_signal = zeros(size(input_mono, 1), 1);
+%     original_mixer_signal = zeros(size(input_mono, 1), 1);
 
     % Generate the one mixer signal based on watermark information
     last_bit = 2;
@@ -143,14 +145,15 @@ function add_echo_watermark(watermark, file_path, ...
 
     zero_signal = zero_delay_signal .* zero_mixer_signal;
     one_signal = one_delay_signal .* one_mixer_signal;
-    original_signal = input .* original_mixer_signal;
+    original_signal = input_mono .* original_mixer_signal;
 
     processed_wave = zero_signal + one_signal + original_signal;
     
     toc
 
     % Write the data back to a File
-    output = processed_wave;
+    output = input_stereo;
+    output(:, 1) = processed_wave;
     helpers.write_wav_file([out_dir_echo '/' filename], output, Fs);
 
     % Plot out mixer signals
@@ -179,9 +182,9 @@ function add_echo_watermark(watermark, file_path, ...
 
     subplot(3, 1, 1); 
     hold on;
-    plot(1 : length(input), input);
+    plot(1 : length(input_mono), input_mono);
     ylim([0 - 10 512 + 10]); 
-    title('Input sound signal', 'fontweight', 'bold'); 
+    title('Input channel sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');
     
@@ -189,7 +192,7 @@ function add_echo_watermark(watermark, file_path, ...
     hold on;
     plot(1 : length(output), output);
     ylim([0 - 10 512 + 10]); 
-    title('Output sound signal', 'fontweight', 'bold'); 
+    title('Output channel sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');
 

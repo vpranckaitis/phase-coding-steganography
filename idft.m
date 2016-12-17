@@ -1,4 +1,4 @@
-function [ X ] = idft(Z, dft_impl)
+function [X] = idft(Z, dft_impl)
     % UNTITLED Summary of this function goes here
     %    Detailed explanation goes here
 

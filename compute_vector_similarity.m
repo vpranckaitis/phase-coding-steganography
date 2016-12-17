@@ -9,9 +9,20 @@ function [similarity] = compute_vector_similarity(vectorA, vectorB)
     % Failed attempts
 %     similarity = pdist([vectorA'; vectorBSizeAdjusted'], 'cosine');
 %     similarity = corrcoef([vectorA'; vectorBSizeAdjusted']);
-     similarity = pdist2(vectorA', vectorBSizeAdjusted', 'hamming');
-     similarity = pdist2(vectorA', vectorBSizeAdjusted', 'cosine');
-     
-     similarity = sum(vectorA' == vectorBSizeAdjusted') / numel(vectorA')
+
+    % Cosine and hamming distances
+	similarity = 1 - pdist2(vectorA', vectorBSizeAdjusted', 'hamming');
+    fprintf('Hamming similarity between specified vectors: %d \n', ...
+        similarity);
+
+	similarity = 1 - pdist2(vectorA', vectorBSizeAdjusted', 'cosine');
+    fprintf('Cosine similarity between specified vectors: %d \n', ...
+        similarity);
+
+	% Naive approach from: 
+    % https://se.mathworks.com/matlabcentral/newsreader/view_thread/163277
+	similarity = sum(vectorA' == vectorBSizeAdjusted') / numel(vectorA');
+    fprintf('Naive similarity between specified vectors: %d \n', ...
+        similarity);
 end
     

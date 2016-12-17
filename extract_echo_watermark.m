@@ -205,12 +205,14 @@ function [recovered_watermark] = ...
     title('Encoded sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');
-    
+
     % Experiment 1 - compute the similiraty between the expected result and
     % the decoded value
-    original_watermark = 'ж∆ди@ири'; % 'scrt txt'; % 'xxx xx';
-    tst = compute_vector_similarity(helpers.text2bits(original_watermark), ...
-        decoded_bit_string)
+    original_watermark = 'scrt txt'; % 'ж∆ди@ири'; 'xxxX xXx'; 'xyxy 0%$';
+    similarity = compute_vector_similarity( ...
+        helpers.text2bits(original_watermark), decoded_bit_string);
 
-    tst;
+    % Debug only
+    similarity
+
 end

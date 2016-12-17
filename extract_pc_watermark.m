@@ -56,4 +56,13 @@ function [recovered_watermark] = ...
     xlabel('frequency');
     ylabel('phase, rad');
 
+    % Experiment 1 - compute the similiraty between the expected result and
+    % the decoded value
+    original_watermark = 'scrt txt'; % 'ж∆ди@ири'; 'xxxX xXx'; 'xyxy 0%$';
+    similarity = compute_vector_similarity( ...
+        helpers.text2bits(original_watermark), decoded_bit_string);
+
+    % Debug only
+    similarity
+
 end

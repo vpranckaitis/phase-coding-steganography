@@ -19,7 +19,8 @@ function [recovered_watermark] = extract_pc_watermark(text_length, ...
     end
     
     if nargin < 3
-        filename = 'carlin_blow_it.wav';
+%         filename = 'carlin_blow_it.wav';
+        filename = '69.wav';
     end
 
     % Read the data from the File
@@ -71,7 +72,7 @@ function [recovered_watermark] = algorithm(input_bits, text_length, ...
 
     text_bit_length = text_length * 8;
 
-    Z = dft_impl(input_bits(1 : l));
+    Z = dft_impl(input_bits(1 : sample_size));
     [~, theta] = magnitude_and_phase(Z);
 
     phases = theta((sample_size / 2 - text_bit_length + 1) ...

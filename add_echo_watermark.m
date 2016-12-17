@@ -216,7 +216,7 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, Fs, ...
     title('Input channel sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');
-    % FIXME
+
     subplot(3, 1, 2);
     hold on;
     plot(1 : length(processed_wave), processed_wave);

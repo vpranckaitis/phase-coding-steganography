@@ -25,7 +25,7 @@ function add_pc_watermark(watermark, file_path, filename)
     % Read the data from the File
     full_path = [file_path '/' filename];
 %    [header, input] = helpers.read_wav_file(full_path);
-    [input_stereo, ~] = audioread(full_path, 'native');
+    [input_stereo, Fs] = audioread(full_path, 'native');
 
     channel_count = size(input_stereo, 2);
 
@@ -63,11 +63,12 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
     %   Detailed explanation goes here
 
     text_bit_length = length(watermark_bits);
-    display(sprintf('Segment size: %d', l));
-    display(sprintf('Text length: %d', length(watermark)));
+
+    display(sprintf('Segment size: %d', sample_size));
+    display(sprintf('Text length: %d', text_bit_length / 8));
 
     % Compute 'deltaTheta' – the amount to shift phases
-    Z = dft_impl(input(1 : sample_size));
+    Z = dft_impl(input_bits(1 : sample_size));
     [~, theta] = magnitude_and_phase(Z);
     delta_theta = theta;
     phases = watermark_bits * (-pi) + (pi / 2);
@@ -113,22 +114,23 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
     end
 
     toc
-
     % Plot out the sound wave's signal amplitudes
     figure(3);
     hold on;
 
     subplot(2, 1, 1); 
+    hold on;
     plot(1 : length(input_bits), input_bits);
-    ylim([0 - 10 256 + 10]); 
-    title('Input sound signal', 'fontweight', 'bold'); 
+    ylim([min(input_bits) - 10 max(input_bits) + 10]); 
+    title('Input channel sound signal', 'fontweight', 'bold'); 
     xlabel('time');
-    ylabel('amplitude'); 
-    
-    subplot(2, 1, 2); 
-    plot(1 : length(output), output);
-    ylim([0 - 10 256 + 10]); 
-    title('Output sound signal', 'fontweight', 'bold'); 
+    ylabel('amplitude');
+
+    subplot(2, 1, 2);
+    hold on;
+    plot(1 : length(processed_wave), processed_wave);
+    ylim([min(real(processed_wave)) - 10 max(real(processed_wave)) + 10]); 
+    title('Processed channel sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');
 

@@ -52,9 +52,12 @@ function [recovered_watermark] = ...
     nw = length(w);                             % size of window
     pos = 1;
 
-    zero_delay_signal = [];
-    one_delay_signal = [];
-    decision_signal = [];
+    % NOTE: the linter recomended preallocation here!
+    zero_delay_signal = zeros(nx, 1);
+    one_delay_signal = zeros(nx, 1);
+    decision_signal = zeros(nx, 1);
+
+    tic
 
     while (pos + nw <= nx)                      % while enough signal left
         y = input(pos : pos + nw - 1) .* w;     % make window y
@@ -68,6 +71,8 @@ function [recovered_watermark] = ...
         pos = pos + round(nw / segment_transition_time);    % next window
     end
 
+    toc
+
     last_recorded_bit = 0;
     for pos = 1 : length(zero_delay_signal),
         if one_delay_signal(pos) - zero_delay_signal(pos) > 0
@@ -80,6 +85,8 @@ function [recovered_watermark] = ...
             decision_signal(pos) = last_recorded_bit;
         end        
     end
+
+    toc 
 
     current_bit = 2;
     current_run = 0;
@@ -129,11 +136,19 @@ function [recovered_watermark] = ...
         end
     end
 
+    toc
+
     % Debug only
     decoded_segment_count
     decoded_bit_count
 %     runs;
 %     deciders;
+
+    % Debug only
+    decoded_bit_string
+
+    % Retrieve the textual representation of the decoded information
+    recovered_watermark = helpers.bits2text(decoded_bit_string);
 
     % Plot out decision signals for debugging purposes
     figure(1);
@@ -174,7 +189,7 @@ function [recovered_watermark] = ...
     xlabel('Time');
     ylabel('Offset intensity');
 
-    % Plot out soudn wave signal aplitudes
+    % Plot out the sound wave's signal amplitudes
     figure(3);
     hold on;
 
@@ -193,8 +208,5 @@ function [recovered_watermark] = ...
 %     plot(one_delay_signal);
 %     figure(5);
 %     plot(zero_delay_signal);
-
-    decoded_bit_string
-    recovered_watermark = helpers.bits2text(decoded_bit_string)
 
 end

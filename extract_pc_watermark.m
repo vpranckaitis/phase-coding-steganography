@@ -11,7 +11,7 @@ function [recovered_watermark] = ...
     % Analyze the specified aprameters set defaults wehere needed
 
     if nargin < 1
-        textLength = 4;
+        textLength = 18;
     end
     
     if nargin < 2
@@ -27,16 +27,25 @@ function [recovered_watermark] = ...
 
     [~, input] = helpers.read_wav_file(full_path);
 
+    tic
+
     m = textLength * 8;
 
     Z = dft_impl(input(1 : l));
     [~, theta] = magnitude_and_phase(Z);
 
     phases = theta((l / 2 - m + 1) : (l / 2));
-    textBits = phases < 0
+    decoded_bit_string = phases < 0;
 
-    recovered_watermark = helpers.bits2text(textBits);
-    
+    toc
+
+    % Debug only
+    decoded_bit_string
+
+    % Retrieve the textual representation of the decoded information
+    recovered_watermark = helpers.bits2text(decoded_bit_string);
+
+    % Plot out the sound wave's signal frequencies and phases
     figure(1);
     hold on;
     subplot(3, 1, 3);

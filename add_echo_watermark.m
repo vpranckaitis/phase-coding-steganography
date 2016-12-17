@@ -79,8 +79,9 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
 
     % Initialize the mixer signals
     one_mixer_signal = zeros(size(input, 1), 1);
-    zero_mixer_signal = zeros(size(input, 1), 1);
-    original_mixer_signal = zeros(size(input, 1), 1);
+    % NOTE: followed linter's advice on preallocation!
+%     zero_mixer_signal = zeros(size(input, 1), 1);
+%     original_mixer_signal = zeros(size(input, 1), 1);
 
     % Generate the one mixer signal based on watermark information
     last_bit = 2;
@@ -135,6 +136,7 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
 
     % Write the data back to a File
     output = processed_wave;
+    helpers.write_wav_file([out_dir_echo '/' filename], header, output);
 
     % Plot out mixer signals
     figure(1);
@@ -156,7 +158,7 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     xlabel('Time');
     ylabel('Offset intensity');
 
-    % Plot out soudn wave signal aplitudes
+    % Plot out the sound wave's signal amplitudes
     figure(3);
     hold on;
 
@@ -175,7 +177,5 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     title('Output sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');
-
-    helpers.write_wav_file([out_dir_echo '/' filename], header, output);
 
 end

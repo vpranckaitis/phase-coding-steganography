@@ -1,4 +1,5 @@
-function add_pc_watermark(watermark, file_path, filename)
+function [processed_wave] = add_pc_watermark(watermark, file_path, ...
+    filename)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 
@@ -10,7 +11,7 @@ function add_pc_watermark(watermark, file_path, filename)
     % Analyze the specified aprameters set defaults wehere needed
 
     if nargin < 1
-        watermark = 'test';
+        watermark = 'Tekstas uzslepimui';
     end
     
     if nargin < 2
@@ -40,7 +41,7 @@ function add_pc_watermark(watermark, file_path, filename)
     deltaTheta((l / 2 + 2) : (l / 2 + m + 1)) = -phases(end : -1 : 1);
     deltaTheta = deltaTheta - theta;
 
-    output = zeros(size(input));
+    processed_wave = zeros(size(input));
 
     tic
 
@@ -53,8 +54,9 @@ function add_pc_watermark(watermark, file_path, filename)
         [R, theta] = magnitude_and_phase(Z);
         newTheta = theta + deltaTheta;
         Z = R .* exp(1i * newTheta);
-        output(segmentStart : segmentEnd) = idft_impl(Z);
+        processed_wave(segmentStart : segmentEnd) = idft_impl(Z);
 
+        % Plot out the segment's frequencies and phases
         figure(min([i 2]));
         hold on;
         subplot(3, 1, 1); 
@@ -71,9 +73,14 @@ function add_pc_watermark(watermark, file_path, filename)
             'fontweight', 'bold'); 
         xlabel('frequency'); ylabel('phase, rad');
     end
-    
+
     toc
 
+    % Write the data back to a File
+    output = processed_wave;
+    helpers.write_wav_file([out_dir_pc '/' filename], header, output);
+
+    % Plot out the sound wave's signal amplitudes
     figure(3);
     hold on;
 
@@ -90,8 +97,5 @@ function add_pc_watermark(watermark, file_path, filename)
     title('Output sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude'); 
-
-    % Write the data back to a File
-    helpers.write_wav_file([out_dir_pc '/' filename], header, output);
 
 end

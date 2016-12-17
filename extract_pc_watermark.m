@@ -1,4 +1,4 @@
-function [recovered_watermark] = extract_pc_watermark(textLength, ...
+function [recovered_watermark] = extract_pc_watermark(text_length, ...
     file_path, filename)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
@@ -6,12 +6,12 @@ function [recovered_watermark] = extract_pc_watermark(textLength, ...
     % Retrieve global variables
 
     [~, out_dir_pc, ~] = globals.global_folders();
-    [ l, dft_impl, ~ ] = globals.global_vars_pc();
+    [sample_size, dft_impl, ~] = globals.global_vars_pc();
 
     % Analyze the specified aprameters set defaults wehere needed
 
     if nargin < 1
-        textLength = 18;
+        text_length = 18;
     end
     
     if nargin < 2
@@ -25,22 +25,67 @@ function [recovered_watermark] = extract_pc_watermark(textLength, ...
     % Read the data from the File
     full_path = [file_path '/' filename];
 
-    [~, input] = helpers.read_wav_file(full_path);
+%    [~, input] = helpers.read_wav_file(full_path);
+    [input_stereo, ~] = audioread(full_path, 'native');
+    
+    channel_count = size(input_stereo, 2);
+
+    for channel_index = 1 : channel_count
+        input_mono = double(input_stereo(:, channel_index));
+
+        decoded_watermark = algorithm(input_mono, text_length, ...
+            sample_size, dft_impl)
+
+        % Experiment 1 - compute the similiraty between the expected result
+        % and the decoded value
+
+        % NOTE: this experiment is a dud, because it needs to be a lot more
+        % complex and evaluate the results with a "sliding padding", in 
+        % order to actually determine anything useful. Since the recovered 
+        % text can have invalid segments at the start and end, witch will
+        % mess up the entire similarity result!
+        % Essiantially the results should be compared with both the
+        % whitespaces removed and any completely random symbols in between
+
+%         original_watermark = 'Tekstas uzslepimui';
+        original_watermark = 'Slaptas Tekstas';
+                %'scrt txt'; % 'ж∆ди@ири'; 'xxxX xXx'; 'xyxy 0%$';
+
+        similarity = compute_vector_similarity( ...
+            helpers.text2bits(original_watermark), ...
+            helpers.text2bits(decoded_watermark));
+
+        % Debug only
+        similarity
+
+    end
+
+end
+
+function [recovered_watermark] = algorithm(input_bits, text_length, ...
+    sample_size, dft_impl)
+    % UNTITLED Summary of this function goes here
+    %   Detailed explanation goes here
 
     tic
 
-    m = textLength * 8;
+    text_bit_length = text_length * 8;
 
-    Z = dft_impl(input(1 : l));
+    Z = dft_impl(input_bits(1 : l));
     [~, theta] = magnitude_and_phase(Z);
 
-    phases = theta((l / 2 - m + 1) : (l / 2));
+    phases = theta((sample_size / 2 - text_bit_length + 1) ...
+        : (sample_size / 2));
+
+    % NOTE: should be '< -(pi / 2) - <some threashold>' if we want to be
+    % completely accurate. But in general terms the below should do just
+    % fine
     decoded_bit_string = phases < 0;
 
     toc
 
     % Debug only
-    decoded_bit_string
+%    decoded_bit_string
 
     % Retrieve the textual representation of the decoded information
     recovered_watermark = helpers.bits2text(decoded_bit_string);
@@ -55,14 +100,5 @@ function [recovered_watermark] = extract_pc_watermark(textLength, ...
         'fontweight', 'bold');
     xlabel('frequency');
     ylabel('phase, rad');
-
-    % Experiment 1 - compute the similiraty between the expected result and
-    % the decoded value
-    original_watermark = 'scrt txt'; % 'ж∆ди@ири'; 'xxxX xXx'; 'xyxy 0%$';
-    similarity = compute_vector_similarity( ...
-        helpers.text2bits(original_watermark), decoded_bit_string);
-
-    % Debug only
-    similarity
 
 end

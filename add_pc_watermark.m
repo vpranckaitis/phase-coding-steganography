@@ -1,12 +1,11 @@
-function add_pc_watermark(watermark, file_path, ...
-    filename)
+function add_pc_watermark(watermark, file_path, filename)
     % UNTITLED Summary of this function goes here
-    %   Detailed explanation goes here [processed_wave] = 
+    %   Detailed explanation goes here 
 
     % Retrieve global variables
 
     [in_dir, out_dir_pc, ~] = globals.global_folders();
-    [l, dft_impl, idft_impl] = globals.global_vars_pc();
+    [sample_size, dft_impl, idft_impl] = globals.global_vars_pc();
 
     % Analyze the specified aprameters set defaults wehere needed
 
@@ -25,38 +24,73 @@ function add_pc_watermark(watermark, file_path, ...
 
     % Read the data from the File
     full_path = [file_path '/' filename];
-    [header, input] = helpers.read_wav_file(full_path);
+%    [header, input] = helpers.read_wav_file(full_path);
+    [input_stereo, ~] = audioread(full_path, 'native');
 
-    textBits = helpers.text2bits(watermark);
+    channel_count = size(input_stereo, 2);
 
-    m = length(textBits);
+    watermark_bits = helpers.text2bits(watermark);
+
+    % NOTE: all channels should be the same size or the procedures might
+    % break unexpectedly...
+    %output_stereo = input_stereo;
+    % NOTE: in order to avoid loss of quality initialize to int16!
+    output_stereo = int16(zeros(size(input_stereo, 1), channel_count));
+
+    for channel_index = 1 : channel_count
+        input_mono = double(input_stereo(:, channel_index));
+
+        output_mono = algorithm(watermark_bits, input_mono, ...
+            sample_size, dft_impl, idft_impl);
+
+        output_stereo(:, channel_index) = output_mono;
+    end
+
+    % Write the data back to a File
+    % FIXME
+%    helpers.write_wav_file([out_dir_pc '/' filename], header, output);
+
+%     output_stereo = input_stereo;
+%     output_stereo(:, 1) = processed_wave;
+
+    audiowrite([out_dir_pc '/' filename], output_stereo, Fs);
+
+end
+
+function [processed_wave] = algorithm(watermark_bits, input_bits, ...
+    sample_size, dft_impl, idft_impl)
+    % UNTITLED Summary of this function goes here
+    %   Detailed explanation goes here
+
+    text_bit_length = length(watermark_bits);
     display(sprintf('Segment size: %d', l));
     display(sprintf('Text length: %d', length(watermark)));
 
     % Compute 'deltaTheta' – the amount to shift phases
-    Z = fft(input(1 : l));
-    theta = angle(Z);
-    deltaTheta = theta;
-    phases = textBits * (-pi) + (pi / 2);
-    deltaTheta((l / 2 - m + 1) : (l / 2)) = phases;
-    deltaTheta((l / 2 + 2) : (l / 2 + m + 1)) = -phases(end : -1 : 1);
-    deltaTheta = deltaTheta - theta;
+    Z = dft_impl(input(1 : sample_size));
+    [~, theta] = magnitude_and_phase(Z);
+    delta_theta = theta;
+    phases = watermark_bits * (-pi) + (pi / 2);
+    delta_theta((sample_size / 2 - text_bit_length + 1) ...
+        : (sample_size / 2)) = phases;
+    delta_theta((sample_size / 2 + 2) : (sample_size / 2 ...
+        + text_bit_length + 1)) = -phases(end : -1 : 1);
+    delta_theta = delta_theta - theta;
 
-    processed_wave = zeros(size(input));
+    processed_wave = zeros(size(input_bits));
 
     tic
 
-    for i = 1 : (length(input) / l)
-        segmentStart = (i - 1) * l + 1;
-        segmentEnd = segmentStart + l - 1;
+    for i = 1 : (length(input_bits) / sample_size)
+        segment_start = (i - 1) * sample_size + 1;
+        segment_end = segment_start + sample_size - 1;
 
         % Shift phases of the segment
-        Z = fft(input(segmentStart:segmentEnd));
-        R = abs(Z);
-        theta = angle(Z);
-        newTheta = theta + deltaTheta;
-        Z = R .* exp(1i * newTheta);
-        processed_wave(segmentStart : segmentEnd) = ifft(Z);
+        Z = dft_impl(input_bits(segment_start:segment_end));
+        [R, theta] = magnitude_and_phase(Z);
+        new_theta = theta + delta_theta;
+        Z = R .* exp(1i * new_theta);
+        processed_wave(segment_start : segment_end) = idft_impl(Z);
 
         % Plot out the segment's frequencies and phases
 %         figure(min([i 2]));
@@ -66,28 +100,26 @@ function add_pc_watermark(watermark, file_path, ...
 %         title(sprintf( ... 
 %             'Phase values of segment %d before shifting phases', i), ...
 %             'fontweight', 'bold'); 
-%         xlabel('frequency'); ylabel('phase, rad');
+%         xlabel('frequency');
+%         ylabel('phase, rad');
 %         
 %         subplot(3, 1, 2); 
-%         plot(1 : length(newTheta), newTheta, 'r'); ylim([-2 * pi 2 * pi]);
+%         plot(1 : length(new_theta), new_theta, 'r'); ylim([-2 * pi 2 * pi]);
 %         title(sprintf( ... 
 %             'Phase values of segment %d after shifting phases', i), ...
 %             'fontweight', 'bold'); 
-%         xlabel('frequency'); ylabel('phase, rad');
+%         xlabel('frequency');
+%         ylabel('phase, rad');
     end
 
     toc
-
-    % Write the data back to a File
-    output = processed_wave;
-    helpers.write_wav_file([out_dir_pc '/' filename], header, output);
 
     % Plot out the sound wave's signal amplitudes
     figure(3);
     hold on;
 
     subplot(2, 1, 1); 
-    plot(1 : length(input), input);
+    plot(1 : length(input_bits), input_bits);
     ylim([0 - 10 256 + 10]); 
     title('Input sound signal', 'fontweight', 'bold'); 
     xlabel('time');
@@ -98,6 +130,6 @@ function add_pc_watermark(watermark, file_path, ...
     ylim([0 - 10 256 + 10]); 
     title('Output sound signal', 'fontweight', 'bold'); 
     xlabel('time');
-    ylabel('amplitude'); 
+    ylabel('amplitude');
 
 end

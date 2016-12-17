@@ -55,8 +55,9 @@ function add_echo_watermark(watermark, file_path, ...
 
     % Read the data from the File
     full_path = [file_path '/' filename];
-    [input_stereo, ~] = helpers.read_wav_file(full_path);
-    
+%    [header, input] = helpers.read_wav_file(full_path);
+    [input_stereo, ~] = audioread(full_path, 'native');
+
     input_mono = double(input_stereo(:, 1));
 
 
@@ -65,7 +66,8 @@ function add_echo_watermark(watermark, file_path, ...
 
 
     % divide up a signal into windows
-    zero_delay_signal = single_echo(input_mono, Fs, zero_delay, decay_rate);
+    zero_delay_signal = single_echo(input_mono, Fs, zero_delay, ...
+        decay_rate);
     one_delay_signal = single_echo(input_mono, Fs, one_delay, decay_rate);
 
     % NOTE: not used anywhere
@@ -102,7 +104,10 @@ function add_echo_watermark(watermark, file_path, ...
 
     % Generate the one mixer signal based on watermark information
     last_bit = 2;
-    one_mixer_position = 1;
+    
+    % Calculate starting position so that any silence in the begining of 
+    % the recording can be safely ignored
+    one_mixer_position = find(input_mono, 1);
     
     tic
 
@@ -152,9 +157,12 @@ function add_echo_watermark(watermark, file_path, ...
     toc
 
     % Write the data back to a File
-    output = input_stereo;
-    output(:, 1) = processed_wave;
-    helpers.write_wav_file([out_dir_echo '/' filename], output, Fs);
+    % FIXME
+%    helpers.write_wav_file([out_dir_echo '/' filename], header, output);
+    output_stereo = input_stereo;
+    output_stereo(:, 1) = processed_wave;
+
+    audiowrite([out_dir_echo '/' filename], output_stereo, Fs);
 
     % Plot out mixer signals
     figure(1);
@@ -187,10 +195,10 @@ function add_echo_watermark(watermark, file_path, ...
     title('Input channel sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');
-    
+    % FIXME
     subplot(3, 1, 2);
     hold on;
-    plot(1 : length(output), output);
+    plot(1 : length(processed_wave), processed_wave);
     ylim([0 - 10 512 + 10]); 
     title('Output channel sound signal', 'fontweight', 'bold'); 
     xlabel('time');

@@ -17,7 +17,7 @@ function [recovered_watermark] = extract_echo_watermark(file_path, ...
     
     if nargin < 2
  %       filename = 'carlin_blow_it.wav';
-        filename = '69.wav';
+        filename = '66.wav';
     end
 
     if nargin < 3
@@ -43,7 +43,10 @@ function [recovered_watermark] = extract_echo_watermark(file_path, ...
     % Read the data from the File
     full_path = [file_path '/' filename];
 
-    [~, input] = helpers.read_wav_file(full_path);
+%    [~, input] = helpers.read_wav_file(full_path);
+    [input_stereo, ~] = audioread(full_path, 'native');
+
+    input_mono = double(input_stereo(:, 1));
 
 
     % divide up a signal into windows
@@ -53,16 +56,19 @@ function [recovered_watermark] = extract_echo_watermark(file_path, ...
     segment_length = round(Fs / sample_size);
     segment_transition_time = round(segment_length / (sample_size * 2));
 
-    length_in_s = round(length(input) / Fs);
+    length_in_s = round(length(input_mono) / Fs);
 
     fprintf('Attempting to extract and decode watermark data in %d seconds of audio (%d bits max) at %d b/s\n', ...
         length_in_s, length_in_s * sample_size, sample_size);
 
-    nx = length(input);                         % size of signal
+    nx = length(input_mono);                    % size of signal
 %   w = hamming(bitrate * segment_length / 2);  % hamming window
     w = hamming(segment_length);                % hamming window
     nw = length(w);                             % size of window
-    pos = 1;
+
+    % Calculate starting position so that any silence in the begining of
+    % the recording can be safely ignored
+    pos = find(input_mono, 1);
 
     % NOTE: the linter recomended preallocation here!
     zero_delay_signal = zeros(nx, 1);
@@ -71,14 +77,20 @@ function [recovered_watermark] = extract_echo_watermark(file_path, ...
 
     tic
 
-    while (pos + nw <= nx)                      % while enough signal left
-        y = input(pos : pos + nw - 1) .* w;     % make window y
-        c = abs(rceps(y));
-        % NOTE: no longer used becasue of a serious bug!
-%         ac = abs(autoceps(y));
-  
-        zero_delay_signal(pos) = c(round(zero_delay * Fs) + 1);
-        one_delay_signal(pos) = c(round(one_delay * Fs) + 1);
+    % while enough signal left
+    while (pos + nw <= nx)                       
+        y = input_mono(pos : pos + nw - 1) .* w;     % make window y
+
+        % Only process the signal if the segment (vector y) contains some
+        % non-zero values. There will be no echoes in an empty segment :)
+        if any(y)
+            c = abs(rceps(y));
+            % NOTE: no longer used becasue of a serious bug!
+%            ac = abs(autoceps(y));
+
+            zero_delay_signal(pos) = c(round(zero_delay * Fs) + 1);
+            one_delay_signal(pos) = c(round(one_delay * Fs) + 1);
+        end
 
         pos = pos + round(nw / segment_transition_time);    % next window
     end
@@ -207,7 +219,7 @@ function [recovered_watermark] = extract_echo_watermark(file_path, ...
 
     subplot(3, 1, 3); 
     hold on;
-    plot(1 : length(input), input);
+    plot(1 : length(input_mono), input_mono);
     ylim([0 - 10 512 + 10]); 
     title('Encoded sound signal', 'fontweight', 'bold'); 
     xlabel('time');

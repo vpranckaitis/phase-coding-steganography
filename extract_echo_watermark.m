@@ -17,19 +17,19 @@ function extract_echo_watermark(file_path, filename, Fs, sample_size, ...
     
     if nargin < 2
  %       filename = 'carlin_blow_it.wav';
-        filename = '69.wav';
+        filename = '66.wav';
     end
 
     if nargin < 3
 %         Fs = Fs_default;        
 %         Fs = 11025; % for carlin
-        Fs = 44100; % for 69
+        Fs = 44100; % for 69, 66 and 70
     end
 
     if nargin < 4
 %         sample_size = sample_size_default;
 %         sample_size = 8; % for carlin
-        sample_size = 16; % for 69
+        sample_size = 16; % for 69, 66 and 70
     end
 
     if nargin < 5
@@ -56,7 +56,17 @@ function extract_echo_watermark(file_path, filename, Fs, sample_size, ...
 
         % Experiment 1 - compute the similiraty between the expected result
         % and the decoded value
-        original_watermark = 'Tekstas uzslepimui';
+
+        % NOTE: this experiment is a dud, because it needs to be a lot more
+        % complex and evaluate the results with a "sliding padding", in 
+        % order to actually determine anything useful. Since the recovered 
+        % text can have invalid segments at the start and end, witch will
+        % mess up the entire similarity result!
+        % Essiantially the results should be compared with both the
+        % whitespaces removed and any completely random symbols in between
+
+%         original_watermark = 'Tekstas uzslepimui';
+        original_watermark = 'Slaptas Tekstas';
                 %'scrt txt'; % 'ж∆ди@ири'; 'xxxX xXx'; 'xyxy 0%$';
 
         similarity = compute_vector_similarity( ...
@@ -246,7 +256,7 @@ function [recovered_watermark] = algorithm(input_bits, Fs, sample_size, ...
     subplot(3, 1, 3); 
     hold on;
     plot(1 : length(input_bits), input_bits);
-    ylim([0 - 10 512 + 10]); 
+    ylim([min(input_bits) - 10 max(input_bits) + 10]); 
     title('Encoded sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');

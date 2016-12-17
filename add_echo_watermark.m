@@ -14,8 +14,8 @@ function add_echo_watermark(watermark, file_path, ...
     if nargin < 1
 %        watermark = 'test didelis ir baisus';
 %        watermark = 'test';
-        watermark = 'Tekstas uzslepimui';
-%        watermark = 'Slaptas Tekstas';
+%        watermark = 'Tekstas uzslepimui';
+        watermark = 'Slaptas Tekstas';
 %        watermark = 'hidden txt';
 %        watermark = 'scrt txt';
     end
@@ -26,19 +26,19 @@ function add_echo_watermark(watermark, file_path, ...
 
     if nargin < 3
  %       filename = 'carlin_blow_it.wav';
-        filename = '69.wav';
+        filename = '66.wav';
     end
 
     if nargin < 4
 %         Fs = Fs_default;        
 %         Fs = 11025; % for carlin
-        Fs = 44100; % for 69
+        Fs = 44100; % for 69, 66 and 70
     end
 
     if nargin < 5
 %         sample_size = sample_size_default;
 %         sample_size = 8; % for carlin
-        sample_size = 16; % for 69
+        sample_size = 16; % for 69, 66 and 70
     end
 
     if nargin < 6
@@ -212,7 +212,7 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, Fs, ...
     subplot(3, 1, 1); 
     hold on;
     plot(1 : length(input_bits), input_bits);
-    ylim([0 - 10 512 + 10]); 
+    ylim([min(input_bits) - 10 max(input_bits) + 10]); 
     title('Input channel sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');
@@ -220,7 +220,7 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, Fs, ...
     subplot(3, 1, 2);
     hold on;
     plot(1 : length(processed_wave), processed_wave);
-    ylim([0 - 10 512 + 10]); 
+    ylim([min(processed_wave) - 10 max(processed_wave) + 10]); 
     title('Processed channel sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');

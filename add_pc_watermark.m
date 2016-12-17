@@ -1,7 +1,7 @@
-function [processed_wave] = add_pc_watermark(watermark, file_path, ...
+function add_pc_watermark(watermark, file_path, ...
     filename)
     % UNTITLED Summary of this function goes here
-    %   Detailed explanation goes here
+    %   Detailed explanation goes here [processed_wave] = 
 
     % Retrieve global variables
 
@@ -19,7 +19,8 @@ function [processed_wave] = add_pc_watermark(watermark, file_path, ...
     end
     
     if nargin < 3
-        filename = 'carlin_blow_it.wav';
+%         filename = 'carlin_blow_it.wav';
+        filename = '69.wav';
     end
 
     % Read the data from the File
@@ -33,8 +34,8 @@ function [processed_wave] = add_pc_watermark(watermark, file_path, ...
     display(sprintf('Text length: %d', length(watermark)));
 
     % Compute 'deltaTheta' – the amount to shift phases
-    Z = dft_impl(input(1 : l));
-    [~, theta] = magnitude_and_phase(Z);
+    Z = fft(input(1 : l));
+    theta = angle(Z);
     deltaTheta = theta;
     phases = textBits * (-pi) + (pi / 2);
     deltaTheta((l / 2 - m + 1) : (l / 2)) = phases;
@@ -50,28 +51,29 @@ function [processed_wave] = add_pc_watermark(watermark, file_path, ...
         segmentEnd = segmentStart + l - 1;
 
         % Shift phases of the segment
-        Z = dft_impl(input(segmentStart:segmentEnd));
-        [R, theta] = magnitude_and_phase(Z);
+        Z = fft(input(segmentStart:segmentEnd));
+        R = abs(Z);
+        theta = angle(Z);
         newTheta = theta + deltaTheta;
         Z = R .* exp(1i * newTheta);
-        processed_wave(segmentStart : segmentEnd) = idft_impl(Z);
+        processed_wave(segmentStart : segmentEnd) = ifft(Z);
 
         % Plot out the segment's frequencies and phases
-        figure(min([i 2]));
-        hold on;
-        subplot(3, 1, 1); 
-        plot(1 : length(theta), theta, 'r'); ylim([-2 * pi 2 * pi]); 
-        title(sprintf( ... 
-            'Phase values of segment %d before shifting phases', i), ...
-            'fontweight', 'bold'); 
-        xlabel('frequency'); ylabel('phase, rad');
-        
-        subplot(3, 1, 2); 
-        plot(1 : length(newTheta), newTheta, 'r'); ylim([-2 * pi 2 * pi]);
-        title(sprintf( ... 
-            'Phase values of segment %d after shifting phases', i), ...
-            'fontweight', 'bold'); 
-        xlabel('frequency'); ylabel('phase, rad');
+%         figure(min([i 2]));
+%         hold on;
+%         subplot(3, 1, 1); 
+%         plot(1 : length(theta), theta, 'r'); ylim([-2 * pi 2 * pi]); 
+%         title(sprintf( ... 
+%             'Phase values of segment %d before shifting phases', i), ...
+%             'fontweight', 'bold'); 
+%         xlabel('frequency'); ylabel('phase, rad');
+%         
+%         subplot(3, 1, 2); 
+%         plot(1 : length(newTheta), newTheta, 'r'); ylim([-2 * pi 2 * pi]);
+%         title(sprintf( ... 
+%             'Phase values of segment %d after shifting phases', i), ...
+%             'fontweight', 'bold'); 
+%         xlabel('frequency'); ylabel('phase, rad');
     end
 
     toc

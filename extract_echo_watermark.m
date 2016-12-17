@@ -16,15 +16,20 @@ function [recovered_watermark] = extract_echo_watermark(file_path, ...
     end
     
     if nargin < 2
-        filename = 'carlin_blow_it.wav';
+ %       filename = 'carlin_blow_it.wav';
+        filename = '69.wav';
     end
 
     if nargin < 3
-        Fs = Fs_default;
+%         Fs = Fs_default;        
+%         Fs = 11025; % for carlin
+        Fs = 44100; % for 69
     end
 
     if nargin < 4
-        sample_size = sample_size_default;
+%         sample_size = sample_size_default;
+%         sample_size = 8; % for carlin
+        sample_size = 16; % for 69
     end
 
     if nargin < 5

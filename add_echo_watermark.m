@@ -1,7 +1,7 @@
-function [processed_wave] = add_echo_watermark(watermark, file_path, ...
+function add_echo_watermark(watermark, file_path, ...
     filename, Fs, sample_size, zero_delay, one_delay, decay_rate)
     % UNTITLED Summary of this function goes here
-    %	Detailed explanation goes here
+    %	Detailed explanation goes here [processed_wave] = 
 
     % Retrieve global variables
 
@@ -13,11 +13,11 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
 
     if nargin < 1
 %        watermark = 'test didelis ir baisus';
-%        watermark = 'test';
+        watermark = 'test';
 %        watermark = 'Tekstas uzslepimui';
 %        watermark = 'Slaptas Tekstas';
 %        watermark = 'hidden txt';
-        watermark = 'scrt txt';
+%        watermark = 'scrt txt';
     end
 
     if nargin < 2
@@ -25,15 +25,20 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     end
 
     if nargin < 3
-        filename = 'carlin_blow_it.wav';
+ %       filename = 'carlin_blow_it.wav';
+        filename = '66.wav';
     end
 
     if nargin < 4
-        Fs = Fs_default;
+%         Fs = Fs_default;        
+%         Fs = 11025; % for carlin
+        Fs = 44100; % for 69
     end
 
     if nargin < 5
-        sample_size = sample_size_default;
+%         sample_size = sample_size_default;
+%         sample_size = 8; % for carlin
+        sample_size = 16; % for 69
     end
 
     if nargin < 6
@@ -50,7 +55,7 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
 
     % Read the data from the File
     full_path = [file_path '/' filename];
-    [header, input] = helpers.read_wav_file(full_path);
+    [input, ~] = helpers.read_wav_file(full_path);
 
 
     watermark_bits = helpers.text2bits(watermark);
@@ -68,7 +73,10 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     segment_length = round(Fs / sample_size);
     segment_transition_time = round(segment_length / (sample_size * 2));
 
-    length_in_s = round(length(input) / Fs);
+    % A formula for calcluting audio duration:
+    %   time = FileLength / (Sample Rate * Channels * Bits per sample /8)
+    % Taken from: https://social.msdn.microsoft.com/Forums/windows/en-US/5a92be69-3b4e-4d92-b1d2-141ef0a50c91/how-to-calculate-duration-of-wave-file-from-its-size
+    length_in_s = round(length(input) / (Fs * sample_size / 8));
     watermark_size = size(watermark_bits, 1);
 
     display(sprintf('Segment size: %d', segment_length));
@@ -143,7 +151,7 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
 
     % Write the data back to a File
     output = processed_wave;
-    helpers.write_wav_file([out_dir_echo '/' filename], header, output);
+    helpers.write_wav_file([out_dir_echo '/' filename], output, Fs);
 
     % Plot out mixer signals
     figure(1);

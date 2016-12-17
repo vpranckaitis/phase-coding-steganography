@@ -164,12 +164,17 @@ function [recovered_watermark] = ...
 
     subplot(3, 1, 1);
     hold on;
-    zero_mixer_plot = plot(decision_signal);
-    set(zero_mixer_plot, 'Color', 'blue', 'LineWidth', 0.5);
+
+    difference_plot = plot(one_delay_signal - zero_delay_signal);
+    set(difference_plot, 'Color', 'blue', 'LineWidth', 0.5);
+
+    decision_plot = plot(decision_signal);
+    set(decision_plot, 'Color', 'black', 'LineWidth', 0.75);
     axis([-20, length(decision_signal), -0.1, 1.1]);
-    title('Decision signal', 'fontweight', 'bold');
+    title('Difference between delay signals and Decision signal', ...
+        'fontweight', 'bold');
     xlabel('Time');
-    ylabel('Offset intensity');
+    ylabel('Offset intensity and calculated values');
 
     subplot(3, 1, 2);
     hold on;
@@ -200,13 +205,5 @@ function [recovered_watermark] = ...
     title('Encoded sound signal', 'fontweight', 'bold'); 
     xlabel('time');
     ylabel('amplitude');
-
-
-%     figure(3);
-%     plot(one_delay_signal - zero_delay_signal);
-%     figure(4);
-%     plot(one_delay_signal);
-%     figure(5);
-%     plot(zero_delay_signal);
 
 end

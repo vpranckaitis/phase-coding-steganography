@@ -123,8 +123,8 @@ function [processed_wave] = add_echo_watermark(watermark, file_path, ...
     original_mixer_signal = 1 - (zero_mixer_signal + one_mixer_signal);
 
     % Debug only
-     size(zero_delay_signal);
-     size(zero_mixer_signal);
+%     size(zero_delay_signal);
+%     size(zero_mixer_signal);
 
     zero_signal = zero_delay_signal .* zero_mixer_signal;
     one_signal = one_delay_signal .* one_mixer_signal;

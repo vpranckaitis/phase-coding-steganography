@@ -90,7 +90,6 @@ function [recovered_watermark] = ...
 
     current_bit = 2;
     current_run = 0;
-    decoded_segment_count = 0;
     decoded_bit_count = 0;
 
     % Predict the size of the decoded bit String (bit count)
@@ -100,8 +99,10 @@ function [recovered_watermark] = ...
     % Initialize the decoded bit String with all zeroes
     decoded_bit_string = zeros(bits_to_decode_size_prediction, 1);
 
-    runs = [];
-    deciders = [];
+    % Debug only
+%     decoded_segment_count = 0;
+%     runs = [];
+%     deciders = [];
 
     for pos = 1 : length(decision_signal),
         if current_bit == 2
@@ -116,36 +117,30 @@ function [recovered_watermark] = ...
             number_of_bits = round(segment);
             last_bit_position = decoded_bit_count + number_of_bits;
             
-            decoded_bit_string(decoded_bit_count + 1 : last_bit_position, ...
-                1) = current_bit;
+            decoded_bit_string(decoded_bit_count + 1 : ...
+                last_bit_position, 1) = current_bit;
 
             decoded_bit_count = last_bit_position;
-
-%             bits_to_add(1 : number_of_bits, 1) = current_bit;
-%             decoded_bit_string = [decoded_bit_string; bits_to_add];
-%             bits_to_add = [];
 
             current_bit = decision_signal(pos);
 
             % Debug only
-            runs = [runs, current_run];
-            deciders = [deciders, segment];
+%             runs = [runs, current_run];
+%             deciders = [deciders, segment];
+%             decoded_segment_count = decoded_segment_count + 1;
 
             current_run = 0;
-            decoded_segment_count = decoded_segment_count + 1;
         end
     end
 
     toc
 
     % Debug only
-    decoded_segment_count
-    decoded_bit_count
+%     decoded_segment_count
+%     decoded_bit_count
 %     runs;
 %     deciders;
-
-    % Debug only
-    decoded_bit_string
+%     decoded_bit_string
 
     % Retrieve the textual representation of the decoded information
     recovered_watermark = helpers.bits2text(decoded_bit_string);

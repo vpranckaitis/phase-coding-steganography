@@ -134,11 +134,11 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, Fs, ...
     % Generate the one mixer signal based on watermark information
     last_bit = 2;
 
+    tic
+
     % Calculate starting position so that any silence in the begining of 
     % the recording can be safely ignored
     one_mixer_position = find(input_bits, 1);
-
-    tic
 
     for index = 1 : watermark_size,
         watermark_bit = watermark_bits(index);

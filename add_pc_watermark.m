@@ -100,7 +100,7 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
 
     delta_theta = delta_theta - theta;
 
-    processed_wave = zeros(size(input_bits));
+    processed_wave = zeros(size(adjusted_input));
 
     toc
 
@@ -144,6 +144,9 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
         xlabel('frequency');
         ylabel('phase, rad');
     end
+
+    % Post-processing the wave
+    processed_wave = [zeros(start_segment_position - 1, 1); processed_wave];
 
     toc
 

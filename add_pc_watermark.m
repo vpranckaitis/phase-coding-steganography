@@ -28,15 +28,15 @@ function add_pc_watermark(watermark, file_path, filename)
 %    [header, input] = helpers.read_wav_file(full_path);
     [input_stereo, Fs] = audioread(full_path, 'native');
 
-    channel_count = 1; %size(input_stereo, 2);
+    channel_count = size(input_stereo, 2);
 
     watermark_bits = helpers.text2bits(watermark);
 
     % NOTE: all channels should be the same size or the procedures might
     % break unexpectedly...
-    output_stereo = input_stereo;
+%     output_stereo = input_stereo;
     % NOTE: in order to avoid loss of quality initialize to int16!
-%    output_stereo = int16(zeros(size(input_stereo, 1), channel_count));
+    output_stereo = int16(zeros(size(input_stereo, 1), channel_count));
 
     for channel_index = 1 : channel_count
         input_mono = double(input_stereo(:, channel_index));
@@ -65,7 +65,7 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
 
     % Some statically configurable options (for debugging)
     is_phase_correction_animated = false;
-    
+
 
     text_bit_length = length(watermark_bits);
 
@@ -80,11 +80,10 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
     % the recording can be safely ignored
     start_segment_position = find(input_bits, 1);
 
-    adjusted_input = input_bits(start_segment_position : length(input_bits));
+    % For simplicity just cut (skip) these empty bits entirely
+    adjusted_input = input_bits(start_segment_position : end);
 
-%     % Compute 'deltaTheta' – the amount to shift phases
-%     Z = dft_impl(input_bits((start_segment_position) ...
-%         : (start_segment_position - 1 + sample_size)));
+    % Compute 'delta theta' – the amount to shift phases
     Z = dft_impl(adjusted_input(1 : sample_size));
 
     [~, theta] = magnitude_and_phase(Z);
@@ -119,35 +118,38 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
         Z = R .* exp(1i * new_theta);
         processed_wave(segment_start : segment_end) = idft_impl(Z);
 
+        if ~is_phase_correction_animated && i > 1
+            continue
+        end
+        
         % Plot out the segment's frequencies and phases
         figure(min([i 2]));
         hold on;
 
-        if ~is_phase_correction_animated && i > 1
-            continue
-        end
-
-        subplot(3, 1, 1); 
-        plot(1 : length(theta), theta, 'r'); 
-        ylim([-2 * pi 2 * pi]); 
+        subplot(3, 1, 1);
+        hold on;
+        plot(1 : length(theta), theta, 'r');
+        ylim([-2 * pi 2 * pi]);
         title(sprintf( ... 
             'Phase values of segment %d before shifting phases', i), ...
-            'fontweight', 'bold'); 
+            'fontweight', 'bold');
         xlabel('frequency');
         ylabel('phase, rad');
         
-        subplot(3, 1, 2); 
-        plot(1 : length(new_theta), new_theta, 'r'); 
+        subplot(3, 1, 2);
+        hold on;
+        plot(1 : length(new_theta), new_theta, 'r');
         ylim([-2 * pi 2 * pi]);
         title(sprintf( ... 
             'Phase values of segment %d after shifting phases', i), ...
-            'fontweight', 'bold'); 
+            'fontweight', 'bold');
         xlabel('frequency');
         ylabel('phase, rad');
     end
 
     % Post-processing the wave
-    processed_wave = [zeros(start_segment_position - 1, 1); processed_wave];
+    processed_wave = [zeros(start_segment_position - 1, 1); ...
+        processed_wave];
 
     toc
 
@@ -155,7 +157,7 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
     figure(3);
     hold on;
 
-    subplot(2, 1, 1); 
+    subplot(3, 1, 1); 
     hold on;
     plot(1 : length(input_bits), input_bits);
     ylim([min(input_bits) - 10 max(input_bits) + 10]); 
@@ -163,7 +165,7 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
     xlabel('time');
     ylabel('amplitude');
 
-    subplot(2, 1, 2);
+    subplot(3, 1, 2);
     hold on;
     plot(1 : length(processed_wave), processed_wave);
     ylim([min(real(processed_wave)) - 10 max(real(processed_wave)) + 10]); 

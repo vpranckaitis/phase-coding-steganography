@@ -48,7 +48,7 @@ function [recovered_watermark] = extract_pc_watermark(text_length, ...
         % Essiantially the results should be compared with both the
         % whitespaces removed and any completely random symbols in between
 
-%         original_watermark = 'Tekstas uzslepimui';
+%          original_watermark = 'Tekstas uzslepimui';
         original_watermark = 'Slaptas Tekstas';
                 %'scrt txt'; % 'ж∆ди@ири'; 'xxxX xXx'; 'xyxy 0%$';
 
@@ -76,7 +76,7 @@ function [recovered_watermark] = algorithm(input_bits, text_length, ...
     % the recording can be safely ignored
     start_segment_position = find(input_bits, 1);
 
-    Z = dft_impl(input_bits((start_segment_position) ...
+    Z = dft_impl(input_bits(start_segment_position ...
         : (start_segment_position - 1 + sample_size)));
 
     [~, theta] = magnitude_and_phase(Z);
@@ -100,12 +100,26 @@ function [recovered_watermark] = algorithm(input_bits, text_length, ...
     % Plot out the sound wave's signal frequencies and phases
     figure(1);
     hold on;
+
     subplot(3, 1, 3);
+    hold on;
     plot(1 : length(theta), theta, 'r');
     ylim([-2 * pi 2 * pi]);
     title('Phase values of sample 1 read from stego audio', ...
         'fontweight', 'bold');
     xlabel('frequency');
     ylabel('phase, rad');
+
+    % Plot out the sound wave's signal amplitudes
+    figure(3);
+    hold on;
+
+    subplot(3, 1, 3); 
+    hold on;
+    plot(1 : length(input_bits), input_bits);
+    ylim([min(input_bits) - 10 max(input_bits) + 10]); 
+    title('Encoded sound signal', 'fontweight', 'bold'); 
+    xlabel('time');
+    ylabel('amplitude');
 
 end

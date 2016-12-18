@@ -65,7 +65,7 @@ function add_echo_watermark(watermark, file_path, ...
 
     % NOTE: all channels should be the same size or the procedures might
     % break unexpectedly...
-    %output_stereo = input_stereo;
+%     output_stereo = input_stereo;
     % NOTE: in order to avoid loss of quality initialize to int16!
     output_stereo = int16(zeros(size(input_stereo, 1), channel_count));
 

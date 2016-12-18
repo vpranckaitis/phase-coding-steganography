@@ -10,7 +10,8 @@ function add_pc_watermark(watermark, file_path, filename)
     % Analyze the specified aprameters set defaults wehere needed
 
     if nargin < 1
-        watermark = 'Tekstas uzslepimui';
+%         watermark = 'Tekstas uzslepimui';
+        watermark = 'Slaptas Tekstas';
     end
     
     if nargin < 2
@@ -19,7 +20,7 @@ function add_pc_watermark(watermark, file_path, filename)
     
     if nargin < 3
 %         filename = 'carlin_blow_it.wav';
-        filename = '66.wav';
+        filename = '69.wav';
     end
 
     % Read the data from the File
@@ -27,15 +28,15 @@ function add_pc_watermark(watermark, file_path, filename)
 %    [header, input] = helpers.read_wav_file(full_path);
     [input_stereo, Fs] = audioread(full_path, 'native');
 
-    channel_count = size(input_stereo, 2);
+    channel_count = 1; %size(input_stereo, 2);
 
     watermark_bits = helpers.text2bits(watermark);
 
     % NOTE: all channels should be the same size or the procedures might
     % break unexpectedly...
-    %output_stereo = input_stereo;
+    output_stereo = input_stereo;
     % NOTE: in order to avoid loss of quality initialize to int16!
-    output_stereo = int16(zeros(size(input_stereo, 1), channel_count));
+%    output_stereo = int16(zeros(size(input_stereo, 1), channel_count));
 
     for channel_index = 1 : channel_count
         input_mono = double(input_stereo(:, channel_index));

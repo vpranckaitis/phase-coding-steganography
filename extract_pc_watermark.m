@@ -20,7 +20,7 @@ function [recovered_watermark] = extract_pc_watermark(text_length, ...
     
     if nargin < 3
 %         filename = 'carlin_blow_it.wav';
-        filename = '66.wav';
+        filename = '69.wav';
     end
 
     % Read the data from the File

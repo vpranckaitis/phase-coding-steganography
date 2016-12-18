@@ -20,7 +20,7 @@ function [recovered_watermark] = extract_pc_watermark(text_length, ...
     
     if nargin < 3
 %         filename = 'carlin_blow_it.wav';
-        filename = '69.wav';
+        filename = '66.wav';
     end
 
     % Read the data from the File
@@ -68,11 +68,17 @@ function [recovered_watermark] = algorithm(input_bits, text_length, ...
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 
-    tic
-
     text_bit_length = text_length * 8;
 
-    Z = dft_impl(input_bits(1 : sample_size));
+    tic
+
+    % Calculate starting position so that any silence in the begining of 
+    % the recording can be safely ignored
+    start_segment_position = find(input_bits, 1);
+
+    Z = dft_impl(input_bits((start_segment_position) ...
+        : (start_segment_position - 1 + sample_size)));
+
     [~, theta] = magnitude_and_phase(Z);
 
     phases = theta((sample_size / 2 - text_bit_length + 1) ...

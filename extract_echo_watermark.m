@@ -115,12 +115,12 @@ function [recovered_watermark] = algorithm(input_bits, Fs, sample_size, ...
 
     % while enough signal left
     while (pos + nw <= nx)                       
-        y = input_bits(pos : pos + nw - 1) .* w;     % make window y
+        window = input_bits(pos : pos + nw - 1) .* w;     % make window
 
         % Only process the signal if the segment (vector y) contains some
         % non-zero values. There will be no echoes in an empty segment :)
-        if any(y)
-            c = abs(rceps(y));
+        if any(window)
+            c = abs(rceps(window));
             % NOTE: no longer used becasue of a serious bug!
 %            ac = abs(autoceps(y));
 

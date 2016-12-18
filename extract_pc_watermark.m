@@ -6,12 +6,12 @@ function [recovered_watermark] = extract_pc_watermark(text_length, ...
     % Retrieve global variables
 
     [~, out_dir_pc, ~] = globals.global_folders();
-    [sample_size, dft_impl, ~] = globals.global_vars_pc();
+    [segment_size, dft_impl, ~] = globals.global_vars_pc();
 
     % Analyze the specified aprameters set defaults wehere needed
 
     if nargin < 1
-%         text_length = sample_size / 16; % entire segment (usable part)
+%         text_length = segment_size / 16; % entire segment (usable part)
 %         text_length = 18;
         text_length = 15;
     end
@@ -37,7 +37,7 @@ function [recovered_watermark] = extract_pc_watermark(text_length, ...
         input_mono = double(input_stereo(:, channel_index));
 
         decoded_watermark = algorithm(input_mono, text_length, ...
-            sample_size, dft_impl)
+            segment_size, dft_impl)
 
         % Experiment 1 - compute the similiraty between the expected result
         % and the decoded value
@@ -66,14 +66,14 @@ function [recovered_watermark] = extract_pc_watermark(text_length, ...
 end
 
 function [recovered_watermark] = algorithm(input_bits, text_length, ...
-    sample_size, dft_impl)
+    segment_size, dft_impl)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 
     text_bit_length = text_length * 8;
 
-    fprintf('Attempting to extract and decode %d bits of watermark data in a sample of %d bits (%d actually usable)\n', ...
-        text_bit_length, sample_size, sample_size / 2);
+    fprintf('Attempting to extract and decode %d bits of watermark data in a segment of %d bits (%d actually usable)\n', ...
+        text_bit_length, segment_size, segment_size / 2);
 
     tic
 
@@ -82,12 +82,12 @@ function [recovered_watermark] = algorithm(input_bits, text_length, ...
     start_segment_position = find(input_bits, 1);
 
     Z = dft_impl(input_bits(start_segment_position ...
-        : (start_segment_position - 1 + sample_size)));
+        : (start_segment_position - 1 + segment_size)));
 
     [~, theta] = magnitude_and_phase(Z);
 
-    phases = theta((sample_size / 2 - text_bit_length + 1) ...
-        : (sample_size / 2));
+    phases = theta((segment_size / 2 - text_bit_length + 1) ...
+        : (segment_size / 2));
 
     % NOTE: should be '< -(pi / 2) - <some threashold>' if we want to be
     % completely accurate. But in general terms the below should do just
@@ -110,7 +110,7 @@ function [recovered_watermark] = algorithm(input_bits, text_length, ...
     hold on;
     plot(1 : length(theta), theta, 'r');
     ylim([-2 * pi 2 * pi]);
-    title('Phase values of sample 1 read from stego audio', ...
+    title('Phase values of segment 1 read from stego audio', ...
         'fontweight', 'bold');
     xlabel('frequency');
     ylabel('phase, rad');

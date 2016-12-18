@@ -5,7 +5,7 @@ function add_pc_watermark(watermark, file_path, filename)
     % Retrieve global variables
 
     [in_dir, out_dir_pc, ~] = globals.global_folders();
-    [sample_size, dft_impl, idft_impl] = globals.global_vars_pc();
+    [segment_size, dft_impl, idft_impl] = globals.global_vars_pc();
 
     % Analyze the specified aprameters set defaults wehere needed
 
@@ -42,7 +42,7 @@ function add_pc_watermark(watermark, file_path, filename)
         input_mono = double(input_stereo(:, channel_index));
 
         output_mono = algorithm(watermark_bits, input_mono, ...
-            sample_size, dft_impl, idft_impl);
+            segment_size, dft_impl, idft_impl);
 
         output_stereo(:, channel_index) = output_mono;
     end
@@ -59,7 +59,7 @@ function add_pc_watermark(watermark, file_path, filename)
 end
 
 function [processed_wave] = algorithm(watermark_bits, input_bits, ...
-    sample_size, dft_impl, idft_impl)
+    segment_size, dft_impl, idft_impl)
     % UNTITLED Summary of this function goes here
     %   Detailed explanation goes here
 
@@ -69,17 +69,17 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
 
     text_bit_length = length(watermark_bits);
 
-    display(sprintf('Segment size: %d', sample_size));
+    display(sprintf('Segment size: %d', segment_size));
     display(sprintf('Text length: %d', text_bit_length / 8));
 
-    if text_bit_length >= sample_size / 2,
+    if text_bit_length >= segment_size / 2,
         throw(MException('EchoHider:NoSpace', ...
             'The selected size of the segment is not large enough to hide the specified bits (needed: %d bits, have: %d bits, actually usable: %d)\n', ...
-            text_bit_length, sample_size, sample_size / 2));
+            text_bit_length, segment_size, segment_size / 2));
     end
 
-    fprintf('Attempting to embed %d bits of watermark data in a sample of %d bits (%d actually usable)\n', ...
-        text_bit_length, sample_size, sample_size / 2);
+    fprintf('Attempting to embed %d bits of watermark data in a segment of %d bits (%d actually usable)\n', ...
+        text_bit_length, segment_size, segment_size / 2);
 
     %%% Process the first valid segment %%%
 
@@ -93,7 +93,7 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
     adjusted_input = input_bits(start_segment_position : end);
 
     % Compute 'delta theta' – the amount to shift phases
-    Z = dft_impl(adjusted_input(1 : sample_size));
+    Z = dft_impl(adjusted_input(1 : segment_size));
 
     [~, theta] = magnitude_and_phase(Z);
 
@@ -101,10 +101,10 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
 
     phases = watermark_bits * (-pi) + (pi / 2);
 
-    delta_theta((sample_size / 2 - text_bit_length + 1) ...
-        : (sample_size / 2)) = phases;
+    delta_theta((segment_size / 2 - text_bit_length + 1) ...
+        : (segment_size / 2)) = phases;
 
-    delta_theta((sample_size / 2 + 2) : (sample_size / 2 ...
+    delta_theta((segment_size / 2 + 2) : (segment_size / 2 ...
         + text_bit_length + 1)) = -phases(end : -1 : 1);
 
     delta_theta = delta_theta - theta;
@@ -116,9 +116,9 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
     %%% Process (correct) the remaining segments %%%
     % NOTE: since the skipped bits are 0 there is nothing to correct there
 
-    for i = 1 : (length(adjusted_input) / sample_size)
-        segment_start = (i - 1) * sample_size + 1;
-        segment_end = segment_start + sample_size - 1;
+    for i = 1 : (length(adjusted_input) / segment_size)
+        segment_start = (i - 1) * segment_size + 1;
+        segment_end = segment_start + segment_size - 1;
 
         % Shift phases of the segment
         Z = dft_impl(adjusted_input(segment_start : segment_end));

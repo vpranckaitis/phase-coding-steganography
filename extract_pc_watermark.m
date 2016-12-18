@@ -11,7 +11,9 @@ function [recovered_watermark] = extract_pc_watermark(text_length, ...
     % Analyze the specified aprameters set defaults wehere needed
 
     if nargin < 1
-        text_length = 18;
+%         text_length = sample_size / 16; % entire segment (usable part)
+%         text_length = 18;
+        text_length = 15;
     end
     
     if nargin < 2
@@ -69,6 +71,9 @@ function [recovered_watermark] = algorithm(input_bits, text_length, ...
     %   Detailed explanation goes here
 
     text_bit_length = text_length * 8;
+
+    fprintf('Attempting to extract and decode %d bits of watermark data in a sample of %d bits (%d actually usable)\n', ...
+        text_bit_length, sample_size, sample_size / 2);
 
     tic
 

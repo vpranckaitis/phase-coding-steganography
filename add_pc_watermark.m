@@ -72,6 +72,15 @@ function [processed_wave] = algorithm(watermark_bits, input_bits, ...
     display(sprintf('Segment size: %d', sample_size));
     display(sprintf('Text length: %d', text_bit_length / 8));
 
+    if text_bit_length >= sample_size / 2,
+        throw(MException('EchoHider:NoSpace', ...
+            'The selected size of the segment is not large enough to hide the specified bits (needed: %d bits, have: %d bits, actually usable: %d)\n', ...
+            text_bit_length, sample_size, sample_size / 2));
+    end
+
+    fprintf('Attempting to embed %d bits of watermark data in a sample of %d bits (%d actually usable)\n', ...
+        text_bit_length, sample_size, sample_size / 2);
+
     %%% Process the first valid segment %%%
 
     tic
